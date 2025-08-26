@@ -135,16 +135,20 @@
 }
 
 @layer utilities {
-  /* Glassmorphism utilities */
+  /* Enhanced glassmorphism utilities */
   .glass {
     @apply backdrop-blur-md bg-white/70 dark:bg-gray-800/70;
+  }
+  
+  .glass-strong {
+    @apply backdrop-blur-lg bg-white/80 dark:bg-gray-800/80;
   }
   
   .glass-border {
     @apply border border-gray-200/50 dark:border-gray-700/50;
   }
   
-  /* Custom animations */
+  /* Enhanced animations */
   .animate-pulse-slow {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
@@ -161,6 +165,10 @@
     animation: scaleIn 0.2s ease-out;
   }
   
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
   /* Quantum-themed gradient backgrounds */
   .quantum-gradient {
     background: linear-gradient(135deg, var(--quantum-blue), var(--quantum-purple));
@@ -171,6 +179,64 @@
       hsl(215 100% 53% / 0.1), 
       hsl(260 78% 62% / 0.1)
     );
+  }
+  
+  .quantum-gradient-hover:hover {
+    background: linear-gradient(135deg, 
+      hsl(215 100% 53% / 0.15), 
+      hsl(260 78% 62% / 0.15)
+    );
+    transition: background 0.3s ease;
+  }
+  
+  /* Beautiful hover effects */
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+    box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .hover-glow:hover {
+    box-shadow: 0 0 20px hsl(var(--quantum-blue) / 0.3);
+    transition: box-shadow 0.3s ease;
+  }
+  
+  /* Status indicators with enhanced styling */
+  .status-indicator {
+    @apply relative overflow-hidden;
+  }
+  
+  .status-indicator::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r opacity-0 transition-opacity duration-300;
+  }
+  
+  .status-indicator.running::before {
+    @apply from-green-400/20 to-blue-400/20 opacity-100;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+  
+  .status-indicator.queued::before {
+    @apply from-yellow-400/20 to-orange-400/20 opacity-100;
+  }
+  
+  .status-indicator.completed::before {
+    @apply from-blue-400/20 to-purple-400/20 opacity-100;
+  }
+  
+  /* Enhanced borders and shadows */
+  .border-quantum {
+    border-image: linear-gradient(135deg, var(--quantum-blue), var(--quantum-purple)) 1;
+  }
+  
+  .shadow-quantum {
+    box-shadow: 0 4px 20px hsl(var(--quantum-blue) / 0.1), 
+                0 1px 3px hsl(var(--quantum-purple) / 0.1);
+  }
+  
+  .shadow-quantum-lg {
+    box-shadow: 0 10px 40px hsl(var(--quantum-blue) / 0.15), 
+                0 4px 6px hsl(var(--quantum-purple) / 0.1);
   }
 }
 
@@ -198,5 +264,24 @@
   100% { 
     transform: scale(1); 
     opacity: 1; 
+  }
+}
+
+@keyframes glow {
+  0% { 
+    box-shadow: 0 0 5px hsl(var(--quantum-blue) / 0.2); 
+  }
+  100% { 
+    box-shadow: 0 0 20px hsl(var(--quantum-blue) / 0.4), 
+                0 0 30px hsl(var(--quantum-purple) / 0.3);
+  }
+}
+
+@keyframes shimmer {
+  0% { 
+    transform: translateX(-100%); 
+  }
+  100% { 
+    transform: translateX(100%); 
   }
 }

@@ -3,8 +3,11 @@ import { Moon, Sun, Bell, Search, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/hooks/use-theme";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { NotificationPanel } from "./notification-panel";
+import { useJobStats } from "@/hooks/use-jobs";
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -14,9 +17,14 @@ interface HeaderProps {
 
 export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh }: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
+  const { data: stats } = useJobStats();
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshInterval, setRefreshInterval] = useState("10");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  
+  // Calculate notification count (running + recently completed)
+  const notificationCount = (stats?.runningJobs || 0) + Math.min((stats?.totalJobs || 0) - (stats?.runningJobs || 0) - (stats?.queuedJobs || 0), 10);
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -113,11 +121,36 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh }: H
               )}
             </div>
 
+            {/* Notifications */}
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                data-testid="button-notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {notificationCount > 0 && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1"
+                  >
+                    <Badge className="bg-red-500 text-white text-xs min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                      {notificationCount > 99 ? "99+" : notificationCount}
+                    </Badge>
+                  </motion.div>
+                )}
+              </Button>
+            </div>
+
             {/* Manual Refresh Button */}
             <Button
               variant="ghost"
               size="icon"
               onClick={handleManualRefresh}
+              className="hover:bg-green-50 dark:hover:bg-green-900/20"
               data-testid="button-manual-refresh"
             >
               <motion.div
@@ -133,28 +166,29 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh }: H
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
+              className="hover:bg-purple-50 dark:hover:bg-purple-900/20"
               data-testid="button-theme-toggle"
             >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-
-            {/* Notifications */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative"
-              data-testid="button-notifications"
-            >
-              <Bell className="h-4 w-4" />
-              <motion.span 
-                className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
+              <motion.div
+                whileHover={{ rotate: 15 }}
+                transition={{ duration: 0.2 }}
+              >
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </motion.div>
             </Button>
           </motion.div>
         </div>
       </div>
+      
+      {/* Notification Panel */}
+      <AnimatePresence>
+        {showNotifications && (
+          <NotificationPanel
+            isOpen={showNotifications}
+            onClose={() => setShowNotifications(false)}
+          />
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 }

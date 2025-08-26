@@ -54,7 +54,8 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
           job.id.toLowerCase().includes(query) ||
           job.backend.toLowerCase().includes(query) ||
           job.status.toLowerCase().includes(query) ||
-          job.name?.toLowerCase().includes(query)
+          job.name?.toLowerCase().includes(query) ||
+          job.tags?.some(tag => tag.toLowerCase().includes(query))
         );
       }
       return true;
