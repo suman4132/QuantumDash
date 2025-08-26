@@ -20,7 +20,8 @@ const chartVariants = {
 export function AnalyticsCharts() {
   const { data: stats, isLoading: statsLoading } = useJobStats();
   const { data: trends, isLoading: trendsLoading } = useJobTrends();
-  const { data: jobs = [] } = useJobs();
+  const { data: jobsData } = useJobs(1, 100); // Get more jobs for analytics
+  const jobs = jobsData?.jobs || [];
 
   // Prepare status chart data
   const statusData = [

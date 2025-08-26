@@ -33,7 +33,8 @@ const progressBarVariants = {
 };
 
 export function TimelineView() {
-  const { data: jobs = [], isLoading } = useJobs();
+  const { data, isLoading } = useJobs(1, 50); // Get more jobs for timeline
+  const jobs = data?.jobs || [];
 
   // Filter to show only active/recent jobs for timeline
   const timelineJobs = jobs

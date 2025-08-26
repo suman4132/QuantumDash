@@ -8,10 +8,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Jobs endpoints
   app.get("/api/jobs", async (req, res) => {
     try {
-      const limit = parseInt(req.query.limit as string) || 50;
-      const offset = parseInt(req.query.offset as string) || 0;
-      const jobs = await storage.getJobs(limit, offset);
-      res.json(jobs);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const offset = (page - 1) * limit;
+      
+      const allJobs = await storage.getJobs();
+      const totalJobs = allJobs.length;
+      const paginatedJobs = allJobs.slice(offset, offset + limit);
+      
+      res.json({
+        jobs: paginatedJobs,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(totalJobs / limit),
+          totalJobs,
+          limit
+        }
+      });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch jobs" });
     }

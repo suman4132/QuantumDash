@@ -2,15 +2,23 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { Job, InsertJob, JobStatus, Backend, Session } from "@shared/schema";
 
-export function useJobs(limit = 50, offset = 0) {
+export function useJobs(page = 1, limit = 10) {
   return useQuery({
-    queryKey: ["/api/jobs", limit, offset],
+    queryKey: ["/api/jobs", page, limit],
     queryFn: async () => {
-      const response = await fetch(`/api/jobs?limit=${limit}&offset=${offset}`);
+      const response = await fetch(`/api/jobs?page=${page}&limit=${limit}`);
       if (!response.ok) throw new Error("Failed to fetch jobs");
-      return response.json() as Promise<Job[]>;
+      return response.json() as Promise<{
+        jobs: Job[];
+        pagination: {
+          currentPage: number;
+          totalPages: number;
+          totalJobs: number;
+          limit: number;
+        };
+      }>;
     },
-    refetchInterval: 10000, // Refetch every 10 seconds
+    refetchInterval: 8000, // Refetch every 8 seconds for more live updates
   });
 }
 
@@ -40,7 +48,7 @@ export function useJobStats() {
         successRate: number;
       }>;
     },
-    refetchInterval: 5000, // Refetch every 5 seconds
+    refetchInterval: 3000, // Refetch every 3 seconds for live feel
   });
 }
 
@@ -56,6 +64,7 @@ export function useJobTrends() {
         label: string;
       }>>;
     },
+    refetchInterval: 10000, // Refetch every 10 seconds for live trends
   });
 }
 
@@ -67,7 +76,7 @@ export function useBackends() {
       if (!response.ok) throw new Error("Failed to fetch backends");
       return response.json() as Promise<Backend[]>;
     },
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 15000, // Refetch every 15 seconds
   });
 }
 

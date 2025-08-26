@@ -36,8 +36,11 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
   const [sortBy, setSortBy] = useState<string>("submissionTime");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showJobForm, setShowJobForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   
-  const { data: jobs = [], isLoading } = useJobs();
+  const { data, isLoading } = useJobs(currentPage, 10);
+  const jobs = data?.jobs || [];
+  const pagination = data?.pagination;
   const updateJobStatus = useUpdateJobStatus();
   const deleteJob = useDeleteJob();
   const { toast } = useToast();
@@ -109,6 +112,10 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
   };
 
   const uniqueBackends = Array.from(new Set(jobs.map(job => job.backend)));
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
 
   if (isLoading) {
     return (
@@ -315,16 +322,56 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
       <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Showing {filteredJobs.length} of {jobs.length} jobs
+            {pagination && (
+              <>
+                Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalJobs)} of {pagination.totalJobs} jobs
+              </>
+            )}
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" disabled>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              disabled={!pagination || pagination.currentPage === 1}
+              onClick={() => pagination && handlePageChange(pagination.currentPage - 1)}
+              data-testid="button-previous-page"
+            >
               Previous
             </Button>
-            <Button variant="outline" size="sm" className="bg-blue-600 text-white">
-              1
-            </Button>
-            <Button variant="outline" size="sm" disabled>
+            
+            {pagination && Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum;
+              if (pagination.totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (pagination.currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (pagination.currentPage >= pagination.totalPages - 2) {
+                pageNum = pagination.totalPages - 4 + i;
+              } else {
+                pageNum = pagination.currentPage - 2 + i;
+              }
+              
+              return (
+                <Button
+                  key={pageNum}
+                  variant="outline"
+                  size="sm"
+                  className={pagination.currentPage === pageNum ? "bg-blue-600 text-white" : ""}
+                  onClick={() => handlePageChange(pageNum)}
+                  data-testid={`button-page-${pageNum}`}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              disabled={!pagination || pagination.currentPage === pagination.totalPages}
+              onClick={() => pagination && handlePageChange(pagination.currentPage + 1)}
+              data-testid="button-next-page"
+            >
               Next
             </Button>
           </div>
