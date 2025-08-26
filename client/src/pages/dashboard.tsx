@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, CheckCircle, XCircle, Clock, Play } from "lucide-react";
 import { Header } from "@/components/dashboard/header";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { JobsTable } from "@/components/dashboard/jobs-table";
@@ -50,10 +50,18 @@ export default function Dashboard() {
           onSuccess: () => {
             const statusMessages = {
               running: "Job started running",
-              done: "Job completed successfully",
+              done: "Job completed successfully", 
               failed: "Job failed",
               cancelled: "Job was cancelled",
               queued: "Job queued",
+            };
+
+            const statusIcons = {
+              running: <Play className="w-4 h-4" />,
+              done: <CheckCircle className="w-4 h-4" />,
+              failed: <XCircle className="w-4 h-4" />,
+              cancelled: <XCircle className="w-4 h-4" />,
+              queued: <Clock className="w-4 h-4" />,
             };
             
             toast({
@@ -97,11 +105,38 @@ export default function Dashboard() {
 
   return (
     <motion.div 
-      className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
+      className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
+      {/* Floating background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"
+          animate={{ 
+            scale: [1, 1.1, 1],
+            rotate: [0, 180, 360],
+          }}
+          transition={{ 
+            duration: 20, 
+            repeat: Infinity, 
+            ease: "linear" 
+          }}
+        />
+        <motion.div
+          className="absolute top-3/4 right-1/4 w-64 h-64 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"
+          animate={{ 
+            scale: [1.1, 1, 1.1],
+            rotate: [360, 180, 0],
+          }}
+          transition={{ 
+            duration: 15, 
+            repeat: Infinity, 
+            ease: "linear" 
+          }}
+        />
+      </div>
       <Header
         onSearch={handleSearch}
         onRefreshIntervalChange={handleRefreshIntervalChange}
@@ -145,10 +180,15 @@ export default function Dashboard() {
       >
         <Button
           onClick={handleManualRefresh}
-          className="w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+          className="w-16 h-16 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 hover:from-blue-700 hover:via-purple-700 hover:to-blue-700 text-white rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-110 transition-all duration-300 backdrop-blur-sm border-2 border-white/20"
           data-testid="button-floating-refresh"
         >
-          <RefreshCw className="w-6 h-6" />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          >
+            <RefreshCw className="w-7 h-7" />
+          </motion.div>
         </Button>
       </motion.div>
     </motion.div>

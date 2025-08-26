@@ -39,8 +39,8 @@ export function BackendAdvisor() {
   const { data: backends = [], isLoading } = useBackends();
 
   const sortedBackends = [...backends].sort((a, b) => {
-    const statusPriority = { available: 0, busy: 1, maintenance: 2, offline: 3 };
-    return statusPriority[a.status] - statusPriority[b.status];
+    const statusPriority: Record<BackendStatus, number> = { available: 0, busy: 1, maintenance: 2, offline: 3 };
+    return statusPriority[a.status as BackendStatus] - statusPriority[b.status as BackendStatus];
   });
 
   if (isLoading) {
@@ -81,12 +81,12 @@ export function BackendAdvisor() {
             initial="hidden"
             animate="visible"
             whileHover="hover"
-            className={`p-4 border rounded-lg cursor-pointer ${statusColors[backend.status]}`}
+            className={`p-4 border rounded-lg cursor-pointer ${statusColors[backend.status as BackendStatus]}`}
             data-testid={`backend-${backend.id}`}
           >
             <div className="flex items-center justify-between mb-2">
               <div className="font-medium text-gray-900 dark:text-white">{backend.name}</div>
-              <Badge className={statusBadgeColors[backend.status]}>
+              <Badge className={statusBadgeColors[backend.status as BackendStatus]}>
                 {backend.status.charAt(0).toUpperCase() + backend.status.slice(1)}
               </Badge>
             </div>

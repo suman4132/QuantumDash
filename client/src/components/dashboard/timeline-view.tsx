@@ -104,11 +104,11 @@ export function TimelineView() {
                   variants={progressBarVariants}
                   initial="initial"
                   animate="animate"
-                  className={`absolute left-0 top-0 h-full ${statusColors[job.status].bg} rounded-full ${
+                  className={`absolute left-0 top-0 h-full ${statusColors[job.status as JobStatus].bg} rounded-full ${
                     job.status === "running" ? "animate-pulse" : ""
                   }`}
                 />
-                <div className={`absolute inset-0 flex items-center justify-center text-xs font-medium ${statusColors[job.status].text}`}>
+                <div className={`absolute inset-0 flex items-center justify-center text-xs font-medium ${statusColors[job.status as JobStatus].text}`}>
                   {getStatusText(job)}
                 </div>
               </div>

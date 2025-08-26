@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useJobs, useUpdateJobStatus, useDeleteJob } from "@/hooks/use-jobs";
 import { useToast } from "@/hooks/use-toast";
+import { JobForm } from "./job-form";
 import type { Job, JobStatus } from "@shared/schema";
 import { format, formatDistanceToNow } from "date-fns";
 
@@ -34,6 +35,7 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
   const [backendFilter, setBackendFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("submissionTime");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [showJobForm, setShowJobForm] = useState(false);
   
   const { data: jobs = [], isLoading } = useJobs();
   const updateJobStatus = useUpdateJobStatus();
@@ -106,7 +108,7 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const uniqueBackends = [...new Set(jobs.map(job => job.backend))];
+  const uniqueBackends = Array.from(new Set(jobs.map(job => job.backend)));
 
   if (isLoading) {
     return (
@@ -155,7 +157,11 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
               </SelectContent>
             </Select>
 
-            <Button className="bg-blue-600 hover:bg-blue-700" data-testid="button-new-job">
+            <Button 
+              className="bg-blue-600 hover:bg-blue-700" 
+              onClick={() => setShowJobForm(true)}
+              data-testid="button-new-job"
+            >
               <Plus className="w-4 h-4 mr-2" />
               New Job
             </Button>
@@ -231,7 +237,7 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
                   <TableCell className="font-mono text-sm">{job.id}</TableCell>
                   <TableCell>{job.backend}</TableCell>
                   <TableCell>
-                    <Badge className={`${statusColors[job.status]} animate-fade-in`}>
+                    <Badge className={`${statusColors[job.status as JobStatus]} animate-fade-in`}>
                       <motion.div 
                         className="w-2 h-2 rounded-full mr-1.5"
                         animate={job.status === "running" ? { opacity: [1, 0.3, 1] } : {}}
@@ -324,6 +330,13 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
           </div>
         </div>
       </div>
+
+      {/* Job Creation Form Modal */}
+      <AnimatePresence>
+        {showJobForm && (
+          <JobForm onClose={() => setShowJobForm(false)} />
+        )}
+      </AnimatePresence>
     </Card>
   );
 }

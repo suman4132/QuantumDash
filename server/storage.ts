@@ -38,12 +38,21 @@ export class MemStorage implements IStorage {
   private jobs: Map<string, Job>;
   private sessions: Map<string, Session>;
   private backends: Map<string, Backend>;
+  private simulationInterval: NodeJS.Timeout | null = null;
 
   constructor() {
     this.jobs = new Map();
     this.sessions = new Map();
     this.backends = new Map();
     this.initializeData();
+    this.startJobSimulation();
+  }
+
+  private startJobSimulation() {
+    // Simulate job status changes every 15-30 seconds
+    this.simulationInterval = setInterval(() => {
+      this.simulateJobStatusChanges();
+    }, 20000 + Math.random() * 10000);
   }
 
   private initializeData() {
@@ -53,20 +62,44 @@ export class MemStorage implements IStorage {
         name: "ibm_cairo",
         status: "available",
         qubits: 127,
-        queueLength: 0,
-        averageWaitTime: 30,
+        queueLength: 2,
+        averageWaitTime: 45,
         uptime: "99.8%",
       },
       {
         name: "ibm_osaka", 
         status: "busy",
         qubits: 127,
-        queueLength: 8,
-        averageWaitTime: 180,
+        queueLength: 12,
+        averageWaitTime: 320,
         uptime: "99.2%",
       },
       {
         name: "ibm_kyoto",
+        status: "available",
+        qubits: 127,
+        queueLength: 1,
+        averageWaitTime: 25,
+        uptime: "98.9%",
+      },
+      {
+        name: "ibm_brisbane",
+        status: "available",
+        qubits: 127,
+        queueLength: 0,
+        averageWaitTime: 15,
+        uptime: "99.5%",
+      },
+      {
+        name: "ibm_sherbrooke",
+        status: "busy",
+        qubits: 133,
+        queueLength: 6,
+        averageWaitTime: 180,
+        uptime: "99.1%",
+      },
+      {
+        name: "ibm_nazca",
         status: "maintenance",
         qubits: 127,
         queueLength: 0,
@@ -78,8 +111,13 @@ export class MemStorage implements IStorage {
     backendData.forEach(backend => {
       const id = backend.name;
       this.backends.set(id, {
-        ...backend,
         id,
+        name: backend.name,
+        status: backend.status,
+        qubits: backend.qubits,
+        queueLength: backend.queueLength ?? 0,
+        averageWaitTime: backend.averageWaitTime ?? 0,
+        uptime: backend.uptime ?? "0%",
         lastUpdate: new Date(),
       });
     });
@@ -87,12 +125,20 @@ export class MemStorage implements IStorage {
     // Initialize with some sessions
     const sessionData: InsertSession[] = [
       {
-        name: "Session #1",
+        name: "Quantum Machine Learning Research",
         status: "active",
       },
       {
-        name: "Session #2",
+        name: "Optimization Algorithms",
         status: "active",
+      },
+      {
+        name: "Error Correction Testing",
+        status: "active",
+      },
+      {
+        name: "QAOA Implementation",
+        status: "inactive",
       },
     ];
 
@@ -103,8 +149,195 @@ export class MemStorage implements IStorage {
         id,
         createdAt: new Date(Date.now() - (index + 1) * 3600000),
         lastActivity: new Date(Date.now() - (index + 1) * 600000),
-        jobCount: Math.floor(Math.random() * 5) + 1,
+        jobCount: Math.floor(Math.random() * 12) + 3,
       });
+    });
+
+    // Initialize with realistic sample jobs
+    this.initializeSampleJobs();
+  }
+
+  private initializeSampleJobs() {
+    const backends = ["ibm_cairo", "ibm_osaka", "ibm_kyoto", "ibm_brisbane", "ibm_sherbrooke"];
+    const statuses: JobStatus[] = ["done", "running", "queued", "failed", "cancelled"];
+    const jobNames = [
+      "VQE Optimization",
+      "QAOA Circuit Test", 
+      "Quantum ML Training",
+      "Error Mitigation Study",
+      "Bell State Preparation",
+      "Quantum Fourier Transform",
+      "Grover's Algorithm",
+      "Quantum Teleportation",
+      "Shor's Algorithm Demo",
+      "Random Circuit Sampling",
+      "Quantum Supremacy Test",
+      "Variational Classifier",
+      "Quantum Chemistry Sim",
+      "Error Correction Test",
+      "NISQ Algorithm Eval"
+    ];
+
+    // Create 45 realistic sample jobs with various timestamps
+    for (let i = 0; i < 45; i++) {
+      const backend = backends[Math.floor(Math.random() * backends.length)];
+      const name = jobNames[Math.floor(Math.random() * jobNames.length)];
+      
+      // Distribute jobs across different time periods for trends
+      const hoursAgo = Math.floor(Math.random() * 168); // Last 7 days
+      const submissionTime = new Date(Date.now() - hoursAgo * 3600000);
+      
+      let status: JobStatus;
+      let startTime: Date | null = null;
+      let endTime: Date | null = null;
+      let duration: number | null = null;
+      let queuePosition: number | null = null;
+      let error: string | null = null;
+
+      // Determine status based on age (newer jobs more likely to be running/queued)
+      if (hoursAgo < 2) {
+        // Recent jobs: running or queued
+        status = Math.random() < 0.6 ? "running" : "queued";
+      } else if (hoursAgo < 12) {
+        // Recent jobs: mostly done, some running
+        const rand = Math.random();
+        if (rand < 0.7) status = "done";
+        else if (rand < 0.85) status = "running";
+        else if (rand < 0.95) status = "failed";
+        else status = "cancelled";
+      } else {
+        // Older jobs: mostly completed
+        const rand = Math.random();
+        if (rand < 0.8) status = "done";
+        else if (rand < 0.9) status = "failed";
+        else status = "cancelled";
+      }
+
+      // Set timing based on status
+      if (status === "queued") {
+        queuePosition = Math.floor(Math.random() * 15) + 1;
+      } else if (status === "running") {
+        startTime = new Date(submissionTime.getTime() + Math.random() * 3600000);
+      } else if (status === "done" || status === "failed") {
+        startTime = new Date(submissionTime.getTime() + Math.random() * 1800000);
+        endTime = new Date(startTime.getTime() + Math.random() * 1800000 + 30000);
+        duration = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
+      }
+
+      if (status === "failed") {
+        error = "Quantum circuit execution timeout";
+      }
+
+      const job: Job = {
+        id: `job_${(Date.now() + i).toString(36)}`,
+        name,
+        backend,
+        status,
+        queuePosition,
+        submissionTime,
+        startTime,
+        endTime,
+        duration,
+        qubits: Math.floor(Math.random() * 100) + 5,
+        shots: Math.pow(2, Math.floor(Math.random() * 10) + 10), // 1024 to 1M shots
+        program: `// ${name}\nqc = QuantumCircuit(${Math.floor(Math.random() * 20) + 2})\n// Implementation details...`,
+        results: status === "done" ? { counts: { "00": 512, "11": 512 } } : null,
+        error,
+        tags: Math.random() < 0.7 ? [
+          ["research", "optimization", "ml", "demo"][Math.floor(Math.random() * 4)]
+        ] : null,
+        sessionId: `session_${Math.floor(Math.random() * 3) + 1}`,
+      };
+
+      this.jobs.set(job.id, job);
+    }
+  }
+
+  private simulateJobStatusChanges() {
+    const queuedJobs = Array.from(this.jobs.values()).filter(job => job.status === "queued");
+    const runningJobs = Array.from(this.jobs.values()).filter(job => job.status === "running");
+
+    // Move some queued jobs to running (simulate job starts)
+    if (queuedJobs.length > 0 && Math.random() < 0.4) {
+      const job = queuedJobs[Math.floor(Math.random() * queuedJobs.length)];
+      job.status = "running";
+      job.startTime = new Date();
+      job.queuePosition = null;
+      this.jobs.set(job.id, job);
+    }
+
+    // Complete some running jobs (simulate job completion)
+    if (runningJobs.length > 0 && Math.random() < 0.3) {
+      const job = runningJobs[Math.floor(Math.random() * runningJobs.length)];
+      job.endTime = new Date();
+      if (job.startTime) {
+        job.duration = Math.floor((job.endTime.getTime() - new Date(job.startTime).getTime()) / 1000);
+      }
+      // 85% success rate
+      job.status = Math.random() < 0.85 ? "done" : "failed";
+      if (job.status === "failed") {
+        job.error = "Quantum circuit execution error";
+      } else {
+        job.results = { counts: { "00": 512, "01": 256, "10": 128, "11": 128 } };
+      }
+      this.jobs.set(job.id, job);
+    }
+
+    // Occasionally add new jobs to keep things interesting
+    if (Math.random() < 0.2) {
+      this.addRandomJob();
+    }
+
+    // Update backend queue lengths based on current queued jobs
+    this.updateBackendQueues();
+  }
+
+  private addRandomJob() {
+    const backends = ["ibm_cairo", "ibm_osaka", "ibm_kyoto", "ibm_brisbane", "ibm_sherbrooke"];
+    const jobNames = [
+      "Real-time VQE Run",
+      "Live QAOA Test", 
+      "Dynamic ML Training",
+      "Fresh Error Study",
+      "New Bell State Prep",
+      "Live Circuit Test",
+      "Runtime Algorithm",
+      "Active Quantum Task"
+    ];
+
+    const backend = backends[Math.floor(Math.random() * backends.length)];
+    const name = jobNames[Math.floor(Math.random() * jobNames.length)];
+
+    const job: Job = {
+      id: `job_${Date.now().toString(36)}`,
+      name,
+      backend,
+      status: "queued",
+      queuePosition: Array.from(this.jobs.values()).filter(j => j.backend === backend && j.status === "queued").length + 1,
+      submissionTime: new Date(),
+      startTime: null,
+      endTime: null,
+      duration: null,
+      qubits: Math.floor(Math.random() * 50) + 10,
+      shots: Math.pow(2, Math.floor(Math.random() * 6) + 10),
+      program: `// ${name}\nqc = QuantumCircuit(${Math.floor(Math.random() * 10) + 2})\n// Live execution...`,
+      results: null,
+      error: null,
+      tags: [["live", "real-time", "active"][Math.floor(Math.random() * 3)]],
+      sessionId: `session_${Math.floor(Math.random() * 3) + 1}`,
+    };
+
+    this.jobs.set(job.id, job);
+  }
+
+  private updateBackendQueues() {
+    this.backends.forEach(backend => {
+      const queuedJobs = Array.from(this.jobs.values()).filter(job => 
+        job.backend === backend.name && job.status === "queued"
+      );
+      backend.queueLength = queuedJobs.length;
+      backend.lastUpdate = new Date();
+      this.backends.set(backend.id, backend);
     });
   }
 
@@ -121,15 +354,22 @@ export class MemStorage implements IStorage {
   async createJob(insertJob: InsertJob): Promise<Job> {
     const id = `job_${randomUUID().slice(0, 8)}`;
     const job: Job = {
-      ...insertJob,
       id,
+      name: insertJob.name ?? null,
+      backend: insertJob.backend,
+      status: insertJob.status,
+      queuePosition: insertJob.status === 'queued' ? await this.getNextQueuePosition(insertJob.backend) : null,
       submissionTime: new Date(),
       startTime: null,
       endTime: null,
       duration: null,
+      qubits: insertJob.qubits,
+      shots: insertJob.shots,
+      program: insertJob.program,
       results: null,
       error: null,
-      queuePosition: insertJob.status === 'queued' ? await this.getNextQueuePosition(insertJob.backend) : null,
+      tags: insertJob.tags ?? null,
+      sessionId: insertJob.sessionId ?? null,
     };
     
     this.jobs.set(id, job);
@@ -237,8 +477,13 @@ export class MemStorage implements IStorage {
   async createBackend(insertBackend: InsertBackend): Promise<Backend> {
     const id = insertBackend.name;
     const backend: Backend = {
-      ...insertBackend,
       id,
+      name: insertBackend.name,
+      status: insertBackend.status,
+      qubits: insertBackend.qubits,
+      queueLength: insertBackend.queueLength ?? 0,
+      averageWaitTime: insertBackend.averageWaitTime ?? 0,
+      uptime: insertBackend.uptime ?? "0%",
       lastUpdate: new Date(),
     };
     
