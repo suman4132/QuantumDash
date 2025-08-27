@@ -184,7 +184,7 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
                   <DropdownMenuItem>
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
-                  </DropdownMenu>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => {
                     logout();
