@@ -45,6 +45,8 @@ export function useJobStats() {
         totalJobs: number;
         runningJobs: number;
         queuedJobs: number;
+        completedJobs: number;
+        failedJobs: number;
         successRate: number;
       }>;
     },

@@ -11,25 +11,27 @@ export interface IStorage {
   searchJobs(query: string): Promise<Job[]>;
   getJobsByStatus(status: JobStatus): Promise<Job[]>;
   getJobsByBackend(backend: string): Promise<Job[]>;
-  
+
   // Sessions
   getSessions(): Promise<Session[]>;
   getSessionById(id: string): Promise<Session | undefined>;
   createSession(session: InsertSession): Promise<Session>;
   updateSession(id: string, updates: Partial<Session>): Promise<Session | undefined>;
   deleteSession(id: string): Promise<boolean>;
-  
+
   // Backends
   getBackends(): Promise<Backend[]>;
   getBackendById(id: string): Promise<Backend | undefined>;
   createBackend(backend: InsertBackend): Promise<Backend>;
   updateBackend(id: string, updates: Partial<Backend>): Promise<Backend | undefined>;
-  
+
   // Analytics
   getJobStats(): Promise<{
     totalJobs: number;
     runningJobs: number;
     queuedJobs: number;
+    completedJobs: number;
+    failedJobs: number;
     successRate: number;
   }>;
 }
@@ -67,7 +69,7 @@ export class MemStorage implements IStorage {
         uptime: "99.8%",
       },
       {
-        name: "ibm_osaka", 
+        name: "ibm_osaka",
         status: "busy",
         qubits: 127,
         queueLength: 12,
@@ -162,7 +164,7 @@ export class MemStorage implements IStorage {
     const statuses: JobStatus[] = ["done", "running", "queued", "failed", "cancelled"];
     const jobNames = [
       "VQE Optimization",
-      "QAOA Circuit Test", 
+      "QAOA Circuit Test",
       "Quantum ML Training",
       "Error Mitigation Study",
       "Bell State Preparation",
@@ -182,11 +184,11 @@ export class MemStorage implements IStorage {
     for (let i = 0; i < 45; i++) {
       const backend = backends[Math.floor(Math.random() * backends.length)];
       const name = jobNames[Math.floor(Math.random() * jobNames.length)];
-      
+
       // Distribute jobs across different time periods for trends
       const hoursAgo = Math.floor(Math.random() * 168); // Last 7 days
       const submissionTime = new Date(Date.now() - hoursAgo * 3600000);
-      
+
       let status: JobStatus;
       let startTime: Date | null = null;
       let endTime: Date | null = null;
@@ -296,7 +298,7 @@ export class MemStorage implements IStorage {
     const backends = ["ibm_cairo", "ibm_osaka", "ibm_kyoto", "ibm_brisbane", "ibm_sherbrooke"];
     const jobNames = [
       "Real-time VQE Run",
-      "Live QAOA Test", 
+      "Live QAOA Test",
       "Dynamic ML Training",
       "Fresh Error Study",
       "New Bell State Prep",
@@ -332,7 +334,7 @@ export class MemStorage implements IStorage {
 
   private updateBackendQueues() {
     this.backends.forEach(backend => {
-      const queuedJobs = Array.from(this.jobs.values()).filter(job => 
+      const queuedJobs = Array.from(this.jobs.values()).filter(job =>
         job.backend === backend.name && job.status === "queued"
       );
       backend.queueLength = queuedJobs.length;
@@ -371,7 +373,7 @@ export class MemStorage implements IStorage {
       tags: insertJob.tags ?? null,
       sessionId: insertJob.sessionId ?? null,
     };
-    
+
     this.jobs.set(id, job);
     return job;
   }
@@ -448,7 +450,7 @@ export class MemStorage implements IStorage {
       lastActivity: new Date(),
       jobCount: 0,
     };
-    
+
     this.sessions.set(id, session);
     return session;
   }
@@ -486,7 +488,7 @@ export class MemStorage implements IStorage {
       uptime: insertBackend.uptime ?? "0%",
       lastUpdate: new Date(),
     };
-    
+
     this.backends.set(id, backend);
     return backend;
   }
@@ -504,20 +506,24 @@ export class MemStorage implements IStorage {
     totalJobs: number;
     runningJobs: number;
     queuedJobs: number;
+    completedJobs: number;
+    failedJobs: number;
     successRate: number;
   }> {
     const allJobs = Array.from(this.jobs.values());
     const totalJobs = allJobs.length;
     const runningJobs = allJobs.filter(job => job.status === 'running').length;
     const queuedJobs = allJobs.filter(job => job.status === 'queued').length;
-    const completedJobs = allJobs.filter(job => job.status === 'done' || job.status === 'failed');
-    const successfulJobs = completedJobs.filter(job => job.status === 'done').length;
-    const successRate = completedJobs.length > 0 ? (successfulJobs / completedJobs.length) * 100 : 0;
+    const completedJobs = allJobs.filter(job => job.status === 'done').length;
+    const failedJobs = allJobs.filter(job => job.status === 'failed').length;
+    const successRate = (completedJobs + failedJobs) > 0 ? (completedJobs / (completedJobs + failedJobs)) * 100 : 0;
 
     return {
       totalJobs,
       runningJobs,
       queuedJobs,
+      completedJobs,
+      failedJobs,
       successRate: Math.round(successRate * 10) / 10,
     };
   }
