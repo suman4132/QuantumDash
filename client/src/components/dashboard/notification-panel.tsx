@@ -168,7 +168,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
           </div>
 
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto notification-scroll">
             {/* Recent Completed Jobs */}
             <div className="p-4">
               <div className="flex items-center space-x-2 mb-4">
@@ -202,6 +202,9 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                               {job.status}
                             </Badge>
                           </div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            {job.name}
+                          </p>
                           <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                             {job.backend} • {job.endTime && formatDistanceToNow(new Date(job.endTime), { addSuffix: true })}
                           </p>
@@ -229,7 +232,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                   </Badge>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-64 overflow-y-auto scroll-smooth notification-scroll">
                   {runningJobs.map((job, i) => (
                     <motion.div
                       key={job.id}
@@ -266,7 +269,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                   </Badge>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-64 overflow-y-auto scroll-smooth notification-scroll">
                   {queuedJobs.map((job, i) => (
                     <motion.div
                       key={job.id}
