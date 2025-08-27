@@ -16,7 +16,8 @@ import {
   Sparkles,
   Atom,
   Check,
-  Users
+  Users,
+  Youtube
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
