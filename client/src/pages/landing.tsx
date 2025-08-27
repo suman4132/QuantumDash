@@ -24,14 +24,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/use-auth';
 
-// Floating particles component
+// Enhanced floating particles component with quantum-like effects
 const FloatingParticles = () => {
-  const particles = Array.from({ length: 20 }, (_, i) => ({
+  const particles = Array.from({ length: 40 }, (_, i) => ({
     id: i,
-    size: Math.random() * 4 + 2,
+    size: Math.random() * 6 + 2,
     left: Math.random() * 100,
-    animationDelay: Math.random() * 5,
-    duration: Math.random() * 10 + 10
+    top: Math.random() * 100,
+    animationDelay: Math.random() * 8,
+    duration: Math.random() * 15 + 10,
+    color: ['blue', 'purple', 'pink', 'cyan'][Math.floor(Math.random() * 4)]
   }));
 
   return (
@@ -39,26 +41,115 @@ const FloatingParticles = () => {
       {particles.map((particle) => (
         <motion.div
           key={particle.id}
-          className="absolute bg-blue-400/20 rounded-full"
+          className={`absolute rounded-full ${
+            particle.color === 'blue' ? 'bg-blue-400/30' :
+            particle.color === 'purple' ? 'bg-purple-400/30' :
+            particle.color === 'pink' ? 'bg-pink-400/30' : 'bg-cyan-400/30'
+          }`}
           style={{
             width: particle.size,
             height: particle.size,
             left: `${particle.left}%`,
+            top: `${particle.top}%`,
+            filter: 'blur(0.5px)',
+            boxShadow: `0 0 ${particle.size * 2}px currentColor`
           }}
           animate={{
-            y: [window.innerHeight + 100, -100],
-            opacity: [0, 1, 1, 0],
-            scale: [0, 1, 1, 0]
+            y: [0, -window.innerHeight * 0.3, 0],
+            x: [0, Math.sin(particle.id) * 100, 0],
+            opacity: [0, 1, 0.7, 1, 0],
+            scale: [0, 1, 1.2, 1, 0],
+            rotate: [0, 180, 360]
           }}
           transition={{
             duration: particle.duration,
             delay: particle.animationDelay,
             repeat: Infinity,
-            ease: "linear"
+            ease: "easeInOut"
           }}
         />
       ))}
     </div>
+  );
+};
+
+// Quantum circuit animation component
+const QuantumCircuit = () => {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
+      <svg className="absolute inset-0 w-full h-full">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <motion.line
+            key={i}
+            x1="0"
+            y1={`${(i + 1) * 12.5}%`}
+            x2="100%"
+            y2={`${(i + 1) * 12.5}%`}
+            stroke="currentColor"
+            strokeWidth="1"
+            className="text-blue-400"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 0.3 }}
+            transition={{
+              duration: 2,
+              delay: i * 0.2,
+              repeat: Infinity,
+              repeatType: "loop",
+              repeatDelay: 3
+            }}
+          />
+        ))}
+        {Array.from({ length: 15 }).map((_, i) => (
+          <motion.circle
+            key={`node-${i}`}
+            cx={`${(i + 1) * 6.67}%`}
+            cy={`${Math.random() * 80 + 10}%`}
+            r="3"
+            fill="currentColor"
+            className="text-purple-400"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ 
+              scale: [0, 1, 1.2, 1],
+              opacity: [0, 1, 0.7, 1] 
+            }}
+            transition={{
+              duration: 1.5,
+              delay: i * 0.1,
+              repeat: Infinity,
+              repeatDelay: 4
+            }}
+          />
+        ))}
+      </svg>
+    </div>
+  );
+};
+
+// Holographic text effect component
+const HolographicText = ({ children, className = "" }) => {
+  return (
+    <motion.div
+      className={`relative ${className}`}
+      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.3 }}
+    >
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent blur-sm"
+        animate={{
+          opacity: [0.5, 0.8, 0.5],
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      >
+        {children}
+      </motion.div>
+      <div className="relative bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+        {children}
+      </div>
+    </motion.div>
   );
 };
 
@@ -152,26 +243,75 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white overflow-x-hidden">
-      {/* Animated Background */}
+      <style jsx>{`
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+      `}</style>
+      {/* Enhanced Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <motion.div 
-          className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-pink-900/20"
+          className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-purple-900/25 to-pink-900/20"
           style={{ y: backgroundY }}
+          animate={{
+            background: [
+              "linear-gradient(135deg, rgba(29, 78, 216, 0.3) 0%, rgba(147, 51, 234, 0.25) 50%, rgba(236, 72, 153, 0.2) 100%)",
+              "linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(168, 85, 247, 0.25) 50%, rgba(244, 114, 182, 0.2) 100%)",
+              "linear-gradient(135deg, rgba(29, 78, 216, 0.3) 0%, rgba(147, 51, 234, 0.25) 50%, rgba(236, 72, 153, 0.2) 100%)"
+            ]
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
         />
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5" />
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 20px 20px, rgba(156, 146, 172, 0.1) 1px, transparent 1px)`,
-            backgroundSize: '40px 40px'
-          }} />
+        
+        {/* Dynamic grid pattern */}
+        <div className="absolute inset-0 opacity-30">
+          <motion.div 
+            className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10"
+            animate={{
+              opacity: [0.1, 0.2, 0.1]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          <motion.div 
+            className="absolute inset-0" 
+            style={{
+              backgroundImage: `radial-gradient(circle at 30px 30px, rgba(156, 146, 172, 0.15) 2px, transparent 2px)`,
+              backgroundSize: '60px 60px'
+            }}
+            animate={{
+              backgroundPosition: ['0px 0px', '60px 60px', '0px 0px']
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+          />
         </div>
 
-        {/* Floating geometric shapes */}
+        {/* Quantum circuit background */}
+        <QuantumCircuit />
+
+        {/* Enhanced floating geometric shapes */}
         <motion.div
-          className="absolute top-20 left-10 w-32 h-32 border border-blue-400/20 rounded-full"
+          className="absolute top-20 left-10 w-32 h-32 border-2 border-blue-400/30 rounded-full"
           animate={{
             rotate: [0, 360],
             scale: [1, 1.1, 1],
+            borderColor: [
+              "rgba(59, 130, 246, 0.3)",
+              "rgba(147, 51, 234, 0.3)",
+              "rgba(236, 72, 153, 0.3)",
+              "rgba(59, 130, 246, 0.3)"
+            ]
           }}
           transition={{
             duration: 20,
@@ -179,11 +319,19 @@ export default function Landing() {
             ease: "linear"
           }}
         />
+        
         <motion.div
-          className="absolute top-40 right-20 w-24 h-24 border border-purple-400/20"
+          className="absolute top-40 right-20 w-24 h-24 border-2 border-purple-400/30"
           animate={{
-            rotate: [0, -180, 0],
+            rotate: [0, -180, -360],
             y: [-10, 10, -10],
+            scale: [1, 1.2, 1],
+            borderColor: [
+              "rgba(147, 51, 234, 0.3)",
+              "rgba(236, 72, 153, 0.3)",
+              "rgba(59, 130, 246, 0.3)",
+              "rgba(147, 51, 234, 0.3)"
+            ]
           }}
           transition={{
             duration: 15,
@@ -191,14 +339,47 @@ export default function Landing() {
             ease: "easeInOut"
           }}
         />
+
         <motion.div
-          className="absolute bottom-40 left-20 w-16 h-16 bg-gradient-to-r from-pink-400/10 to-blue-400/10 rounded-lg"
+          className="absolute bottom-40 left-20 w-20 h-20 bg-gradient-to-r from-pink-400/20 to-blue-400/20 rounded-lg"
           animate={{
-            rotate: [0, 45, 0],
+            rotate: [0, 45, 90, 45, 0],
             x: [-5, 5, -5],
+            scale: [1, 1.1, 1],
           }}
           transition={{
             duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+
+        {/* Additional quantum-inspired shapes */}
+        <motion.div
+          className="absolute top-1/3 right-1/3 w-16 h-16"
+          animate={{
+            rotate: [0, 90, 180, 270, 360],
+            scale: [1, 1.3, 1, 1.3, 1],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        >
+          <div className="w-full h-full border-2 border-cyan-400/30 transform rotate-45"></div>
+          <div className="absolute inset-2 border border-purple-400/30 rounded-full"></div>
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-1/3 right-1/4 w-12 h-12 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full"
+          animate={{
+            y: [0, -30, 0],
+            opacity: [0.5, 1, 0.5],
+            scale: [1, 1.5, 1],
+          }}
+          transition={{
+            duration: 8,
             repeat: Infinity,
             ease: "easeInOut"
           }}
@@ -308,24 +489,33 @@ export default function Landing() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              Experience the Future of{" "}
-              <motion.span 
-                className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent inline-block"
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-                style={{
-                  backgroundSize: "200% 100%"
-                }}
+              <motion.span
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
               >
-                Quantum Computing
+                Experience the Future of{" "}
               </motion.span>
-              {" "}in the Cloud
+              <HolographicText className="inline-block">
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    textShadow: "0 0 20px rgba(59, 130, 246, 0.5)"
+                  }}
+                >
+                  Quantum Computing
+                </motion.span>
+              </HolographicText>
+              <motion.span
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.7 }}
+              >
+                {" "}in the Cloud
+              </motion.span>
             </motion.h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto">
               Run, learn, and innovate with powerful quantum systems accessible anywhere. 
@@ -338,32 +528,122 @@ export default function Landing() {
               transition={{ duration: 0.8, delay: 0.6 }}
             >
               <motion.div
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ 
+                  scale: 1.05,
+                  boxShadow: "0 20px 40px rgba(59, 130, 246, 0.3)"
+                }}
                 whileTap={{ scale: 0.95 }}
+                className="relative"
               >
                 <Button 
                   onClick={handleGetStarted}
                   size="lg" 
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg px-8 py-4 relative overflow-hidden group"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg px-8 py-4 relative overflow-hidden group border-0"
                 >
                   <motion.div
-                    className="absolute inset-0 bg-white/20"
-                    initial={{ x: "-100%" }}
+                    className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/20"
+                    initial={{ x: "-100%", skewX: -15 }}
                     whileHover={{ x: "100%" }}
-                    transition={{ duration: 0.6 }}
+                    transition={{ duration: 0.8 }}
                   />
-                  <span className="relative flex items-center">
-                    Get Started <ArrowRight className="ml-2 w-5 h-5" />
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-blue-400/30 to-purple-400/30"
+                    animate={{
+                      opacity: [0, 0.5, 0]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  />
+                  <span className="relative flex items-center font-semibold">
+                    <motion.span
+                      animate={{ 
+                        textShadow: [
+                          "0 0 0px rgba(255,255,255,0)",
+                          "0 0 10px rgba(255,255,255,0.3)",
+                          "0 0 0px rgba(255,255,255,0)"
+                        ]
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      Get Started
+                    </motion.span>
+                    <motion.div
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </motion.div>
                   </span>
                 </Button>
+                
+                {/* Particle effect around button */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-1 h-1 bg-blue-400 rounded-full"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                      }}
+                      animate={{
+                        scale: [0, 1, 0],
+                        opacity: [0, 1, 0],
+                        x: [0, (Math.random() - 0.5) * 20],
+                        y: [0, (Math.random() - 0.5) * 20],
+                      }}
+                      transition={{
+                        duration: 2,
+                        delay: i * 0.2,
+                        repeat: Infinity,
+                        ease: "easeOut"
+                      }}
+                    />
+                  ))}
+                </div>
               </motion.div>
+              
               <motion.div
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ 
+                  scale: 1.05,
+                  boxShadow: "0 10px 30px rgba(156, 163, 175, 0.3)"
+                }}
                 whileTap={{ scale: 0.95 }}
+                className="relative"
               >
-                <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-gray-600 text-white hover:bg-gray-800 relative group">
-                  <span className="relative flex items-center">
-                    <BookOpen className="mr-2 w-5 h-5" />
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="text-lg px-8 py-4 border-2 border-gray-600 text-white hover:bg-gray-800 relative group overflow-hidden backdrop-blur-sm"
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10"
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  <span className="relative flex items-center font-semibold">
+                    <motion.div
+                      animate={{ rotate: [0, 15, 0] }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <BookOpen className="mr-2 w-5 h-5" />
+                    </motion.div>
                     Explore Docs
                   </span>
                 </Button>
@@ -397,23 +677,104 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -10 }}
+                whileHover={{ 
+                  y: -15,
+                  rotateY: 5,
+                  rotateX: 5,
+                  scale: 1.02
+                }}
+                className="perspective-1000"
               >
-                <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 hover:border-blue-500/50 transition-all duration-300 group relative overflow-hidden">
+                <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 hover:border-blue-500/50 transition-all duration-500 group relative overflow-hidden h-full">
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100"
-                    transition={{ duration: 0.3 }}
+                    className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100"
+                    transition={{ duration: 0.5 }}
                   />
-                  <CardContent className="p-6 text-center relative z-10">
+                  
+                  {/* Animated border effect */}
+                  <motion.div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100"
+                    initial={{ background: "conic-gradient(from 0deg, transparent, transparent)" }}
+                    whileHover={{
+                      background: [
+                        "conic-gradient(from 0deg, rgba(59, 130, 246, 0.3), transparent, transparent, rgba(59, 130, 246, 0.3))",
+                        "conic-gradient(from 180deg, rgba(147, 51, 234, 0.3), transparent, transparent, rgba(147, 51, 234, 0.3))",
+                        "conic-gradient(from 360deg, rgba(59, 130, 246, 0.3), transparent, transparent, rgba(59, 130, 246, 0.3))"
+                      ]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    style={{ padding: '1px', borderRadius: '0.5rem' }}
+                  />
+                  
+                  <CardContent className="p-6 text-center relative z-10 h-full flex flex-col">
                     <motion.div 
-                      className="mb-4 group-hover:scale-110 transition-transform duration-300"
-                      whileHover={{ rotate: [0, -10, 10, 0] }}
-                      transition={{ duration: 0.5 }}
+                      className="mb-4 group-hover:scale-125 transition-all duration-500"
+                      whileHover={{ 
+                        rotate: [0, -15, 15, 0],
+                        filter: "drop-shadow(0 0 10px currentColor)"
+                      }}
+                      transition={{ duration: 0.8 }}
                     >
-                      {feature.icon}
+                      <motion.div
+                        animate={{
+                          filter: [
+                            "drop-shadow(0 0 0px currentColor)",
+                            "drop-shadow(0 0 5px currentColor)",
+                            "drop-shadow(0 0 0px currentColor)"
+                          ]
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      >
+                        {feature.icon}
+                      </motion.div>
                     </motion.div>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-gray-400 group-hover:text-gray-300 transition-colors duration-300">{feature.description}</p>
+                    
+                    <motion.h3 
+                      className="text-xl font-semibold mb-2"
+                      whileHover={{ 
+                        color: "#60a5fa",
+                        textShadow: "0 0 10px rgba(96, 165, 250, 0.5)"
+                      }}
+                    >
+                      {feature.title}
+                    </motion.h3>
+                    
+                    <motion.p 
+                      className="text-gray-400 group-hover:text-gray-300 transition-colors duration-300 flex-grow"
+                      whileHover={{ scale: 1.02 }}
+                    >
+                      {feature.description}
+                    </motion.p>
+                    
+                    {/* Floating particles on hover */}
+                    <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <motion.div
+                          key={i}
+                          className="absolute w-1 h-1 bg-blue-400 rounded-full"
+                          style={{
+                            left: `${20 + Math.random() * 60}%`,
+                            top: `${20 + Math.random() * 60}%`,
+                          }}
+                          animate={{
+                            scale: [0, 1, 0],
+                            opacity: [0, 1, 0],
+                            x: [0, (Math.random() - 0.5) * 30],
+                            y: [0, (Math.random() - 0.5) * 30],
+                          }}
+                          transition={{
+                            duration: 2,
+                            delay: i * 0.3,
+                            repeat: Infinity,
+                            ease: "easeOut"
+                          }}
+                        />
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
