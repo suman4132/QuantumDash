@@ -17,8 +17,10 @@ import { ActiveSessions } from "@/components/dashboard/active-sessions";
 import { BackendAdvisor } from "@/components/dashboard/backend-advisor";
 import { AllBackendsView } from "@/components/dashboard/all-backends-view";
 import { SessionForm } from "@/components/dashboard/session-form";
-import { NotificationWidget } from "@/components/dashboard/notification-widget";
+import { NotificationPanel } from "@/components/dashboard/notification-panel";
 import { AnimatePresence } from "framer-motion";
+import { useJobNotifications } from "@/hooks/use-job-notifications";
+import { useTheme } from "@/hooks/use-theme";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -51,6 +53,9 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const currentView = searchParams.get('view') || 'dashboard';
 
+  // Initialize job notifications
+  useJobNotifications();
+
   // Set up job simulator
   useEffect(() => {
     const simulator = JobSimulator.getInstance();
@@ -62,7 +67,7 @@ export default function Dashboard() {
           onSuccess: () => {
             const statusMessages = {
               running: "Job started running",
-              done: "Job completed successfully", 
+              done: "Job completed successfully",
               failed: "Job failed",
               cancelled: "Job was cancelled",
               queued: "Job queued",
@@ -134,7 +139,7 @@ export default function Dashboard() {
   // Conditionally render different views
   if (currentView === 'all-backends') {
     return (
-      <motion.div 
+      <motion.div
         className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20"
         variants={containerVariants}
         initial="hidden"
@@ -144,26 +149,26 @@ export default function Dashboard() {
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <motion.div
             className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"
-            animate={{ 
+            animate={{
               scale: [1, 1.1, 1],
               rotate: [0, 180, 360],
             }}
-            transition={{ 
-              duration: 20, 
-              repeat: Infinity, 
-              ease: "linear" 
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear"
             }}
           />
           <motion.div
             className="absolute top-3/4 right-1/4 w-64 h-64 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"
-            animate={{ 
+            animate={{
               scale: [1.1, 1, 1.1],
               rotate: [360, 180, 0],
             }}
-            transition={{ 
-              duration: 15, 
-              repeat: Infinity, 
-              ease: "linear" 
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              ease: "linear"
             }}
           />
         </div>
@@ -185,7 +190,7 @@ export default function Dashboard() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20"
       variants={containerVariants}
       initial="hidden"
@@ -195,26 +200,26 @@ export default function Dashboard() {
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <motion.div
           className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"
-          animate={{ 
+          animate={{
             scale: [1, 1.1, 1],
             rotate: [0, 180, 360],
           }}
-          transition={{ 
-            duration: 20, 
-            repeat: Infinity, 
-            ease: "linear" 
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
           }}
         />
         <motion.div
           className="absolute top-3/4 right-1/4 w-64 h-64 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"
-          animate={{ 
+          animate={{
             scale: [1.1, 1, 1.1],
             rotate: [360, 180, 0],
           }}
-          transition={{ 
-            duration: 15, 
-            repeat: Infinity, 
-            ease: "linear" 
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "linear"
           }}
         />
       </div>
@@ -229,13 +234,13 @@ export default function Dashboard() {
         <motion.div variants={itemVariants}>
           <StatsCards />
         </motion.div>
-        
+
         {/* Notification Widget in top right */}
-        <motion.div 
+        <motion.div
           className="fixed top-20 right-6 z-30"
           variants={itemVariants}
         >
-          <NotificationWidget />
+          <NotificationPanel />
         </motion.div>
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">

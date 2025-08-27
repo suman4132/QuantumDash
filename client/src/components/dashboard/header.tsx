@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { Moon, Sun, Search, RefreshCw } from "lucide-react";
+import { Moon, Sun, Search, RefreshCw, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/hooks/use-theme";
+import { useJobStats, useJobs } from "@/hooks/use-jobs";
+import { NotificationPanel } from "./notification-panel";
 import { motion } from "framer-motion";
 
 interface HeaderProps {
@@ -15,9 +18,23 @@ interface HeaderProps {
 
 export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onViewChange }: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
+  const { data: jobsData } = useJobs(1, 50);
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshInterval, setRefreshInterval] = useState("10");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  
+  const jobs = jobsData?.jobs || [];
+  
+  // Get recent completed jobs (last 24 hours) and running jobs for notification count
+  const recentCompletedJobs = jobs.filter(job => 
+    (job.status === "done" || job.status === "failed") && 
+    job.endTime && 
+    new Date(job.endTime).getTime() > Date.now() - 24 * 60 * 60 * 1000
+  );
+  
+  const runningJobs = jobs.filter(job => job.status === "running");
+  const notificationCount = recentCompletedJobs.length + runningJobs.length;
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -116,6 +133,36 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
 
             
 
+            {/* Notification Bell */}
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="hover:bg-blue-50 dark:hover:bg-blue-900/20 relative"
+                data-testid="button-notifications"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Bell className="h-4 w-4" />
+                </motion.div>
+                {notificationCount > 0 && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1"
+                  >
+                    <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-500 text-white border-2 border-white dark:border-gray-800">
+                      {notificationCount > 99 ? '99+' : notificationCount}
+                    </Badge>
+                  </motion.div>
+                )}
+              </Button>
+            </div>
+
             {/* Manual Refresh Button */}
             <Button
               variant="ghost"
@@ -150,6 +197,12 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
           </motion.div>
         </div>
       </div>
+      
+      {/* Notification Panel */}
+      <NotificationPanel 
+        isOpen={showNotifications} 
+        onClose={() => setShowNotifications(false)} 
+      />
     </motion.header>
   );
 }
