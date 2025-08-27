@@ -180,15 +180,18 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
                   <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
                     {theme === 'dark' ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
                     {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                  </DropdownMenuItem>
+                  </DropdownMenuMenuItem>
                   <DropdownMenuItem>
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
-                  </DropdownMenuItem>
+                  </DropdownMenu>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout} className="text-red-600 dark:text-red-400">
+                  <DropdownMenuItem onClick={() => {
+                    logout();
+                    window.location.href = '/';
+                  }} className="text-red-600 dark:text-red-400">
                     <LogOut className="w-4 h-4 mr-2" />
-                    Logout
+                    Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import Landing from "@/pages/landing";
+import Login from "@/pages/login";
+import Signup from "@/pages/signup";
 import Dashboard from "@/pages/dashboard";
 import NotFound from "@/pages/not-found";
 
@@ -28,6 +30,8 @@ function App() {
           <Router>
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route 
                 path="/dashboard" 
                 element={

@@ -1,28 +1,25 @@
-
-import { useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/use-auth";
+import { useState } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
+  ArrowRight, 
   Zap, 
   Shield, 
   Code, 
   BookOpen, 
-  Users, 
-  Atom,
-  ArrowRight,
-  Check,
-  Github,
-  Linkedin,
-  Twitter,
-  Youtube,
   Menu,
   X,
+  Github,
+  Twitter,
+  Linkedin,
+  Globe,
   Sparkles,
-  Globe
-} from "lucide-react";
+  Atom
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/use-auth';
 
 // Floating particles component
 const FloatingParticles = () => {
@@ -65,7 +62,8 @@ const FloatingParticles = () => {
 export default function Landing() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAuthenticated, login, signup } = useAuth();
-  
+  const navigate = useNavigate();
+
   const { scrollYProgress } = useScroll();
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const textY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
@@ -77,6 +75,7 @@ export default function Landing() {
       name: 'Demo User',
       email: 'demo@quantumcloud.com'
     });
+    navigate('/dashboard');
   };
 
   const handleSignUp = () => {
@@ -85,11 +84,12 @@ export default function Landing() {
       name: 'New User',
       email: 'newuser@quantumcloud.com'
     });
+    navigate('/dashboard');
   };
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
-      window.location.href = '/dashboard';
+      navigate('/dashboard');
     } else {
       handleSignUp();
     }
@@ -162,7 +162,7 @@ export default function Landing() {
             backgroundSize: '40px 40px'
           }} />
         </div>
-        
+
         {/* Floating geometric shapes */}
         <motion.div
           className="absolute top-20 left-10 w-32 h-32 border border-blue-400/20 rounded-full"
@@ -200,7 +200,7 @@ export default function Landing() {
             ease: "easeInOut"
           }}
         />
-        
+
         <FloatingParticles />
       </div>
 
@@ -232,13 +232,13 @@ export default function Landing() {
 
             <div className="hidden md:flex items-center space-x-4">
               {isAuthenticated ? (
-                <Button onClick={() => window.location.href = '/dashboard'} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                <Button onClick={() => navigate('/dashboard')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                   Go to Dashboard
                 </Button>
               ) : (
                 <>
-                  <Button variant="ghost" onClick={handleLogin}>Login</Button>
-                  <Button onClick={handleSignUp} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                  <Button variant="ghost" onClick={() => navigate('/login')}>Login</Button>
+                  <Button onClick={() => navigate('/signup')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                     Sign Up
                   </Button>
                 </>
@@ -273,13 +273,13 @@ export default function Landing() {
               <a href="#docs" className="block hover:text-blue-400 transition-colors">Docs</a>
               <div className="pt-4 border-t border-gray-700 space-y-2">
                 {isAuthenticated ? (
-                  <Button onClick={() => window.location.href = '/dashboard'} className="w-full bg-gradient-to-r from-blue-600 to-purple-600">
+                  <Button onClick={() => navigate('/dashboard')} className="w-full bg-gradient-to-r from-blue-600 to-purple-600">
                     Go to Dashboard
                   </Button>
                 ) : (
                   <>
-                    <Button variant="ghost" onClick={handleLogin} className="w-full">Login</Button>
-                    <Button onClick={handleSignUp} className="w-full bg-gradient-to-r from-blue-600 to-purple-600">
+                    <Button onClick={() => navigate('/login')} variant="ghost" className="w-full">Login</Button>
+                    <Button onClick={() => navigate('/signup')} className="w-full bg-gradient-to-r from-blue-600 to-purple-600">
                       Sign Up
                     </Button>
                   </>
@@ -485,7 +485,7 @@ export default function Landing() {
                         <Globe className="w-4 h-4" />
                       </div>
                     </motion.div>
-                    
+
                     {/* Simulated dashboard elements */}
                     <div className="absolute top-4 left-4 right-4 flex justify-between items-center opacity-30">
                       <div className="flex space-x-2">

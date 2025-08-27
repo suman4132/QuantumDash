@@ -31,9 +31,6 @@ export function useAuth() {
     localStorage.setItem('user-data', JSON.stringify(userData));
     setIsAuthenticated(true);
     setUser(userData);
-    
-    // Redirect to dashboard
-    window.location.href = '/dashboard';
   };
 
   const logout = () => {
@@ -41,9 +38,6 @@ export function useAuth() {
     localStorage.removeItem('user-data');
     setIsAuthenticated(false);
     setUser(null);
-    
-    // Redirect to landing page
-    window.location.href = '/';
   };
 
   const signup = (userData: Omit<User, 'id'>) => {
