@@ -6,7 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/hooks/use-theme";
 import { useJobStats, useJobs } from "@/hooks/use-jobs";
-import { NotificationPanel } from "./notification-panel";
 import { motion } from "framer-motion";
 
 interface HeaderProps {
@@ -14,15 +13,15 @@ interface HeaderProps {
   onRefreshIntervalChange: (interval: number) => void;
   onManualRefresh: () => void;
   onViewChange?: (view: string) => void;
+  onNotificationToggle?: () => void;
 }
 
-export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onViewChange }: HeaderProps) {
+export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onViewChange, onNotificationToggle }: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
   const { data: jobsData } = useJobs(1, 50);
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshInterval, setRefreshInterval] = useState("10");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
   
   const jobs = jobsData?.jobs || [];
   
@@ -138,7 +137,7 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setShowNotifications(!showNotifications)}
+                onClick={onNotificationToggle}
                 className="hover:bg-blue-50 dark:hover:bg-blue-900/20 relative"
                 data-testid="button-notifications"
               >
@@ -197,12 +196,6 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
           </motion.div>
         </div>
       </div>
-      
-      {/* Notification Panel */}
-      <NotificationPanel 
-        isOpen={showNotifications} 
-        onClose={() => setShowNotifications(false)} 
-      />
     </motion.header>
   );
 }

@@ -49,6 +49,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSessionForm, setShowSessionForm] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const currentView = searchParams.get('view') || 'dashboard';
@@ -136,6 +137,10 @@ export default function Dashboard() {
     setShowSessionForm(false);
   };
 
+  const handleNotificationToggle = () => {
+    setShowNotifications(!showNotifications);
+  };
+
   // Conditionally render different views
   if (currentView === 'all-backends') {
     return (
@@ -178,6 +183,7 @@ export default function Dashboard() {
           onRefreshIntervalChange={handleRefreshIntervalChange}
           onManualRefresh={handleManualRefresh}
           onViewChange={handleViewChange}
+          onNotificationToggle={handleNotificationToggle}
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -227,7 +233,8 @@ export default function Dashboard() {
         onSearch={handleSearch}
         onRefreshIntervalChange={handleRefreshIntervalChange}
         onManualRefresh={handleManualRefresh}
-        onViewChange={handleViewChange} // Pass the handler to Header
+        onViewChange={handleViewChange}
+        onNotificationToggle={handleNotificationToggle}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -235,13 +242,30 @@ export default function Dashboard() {
           <StatsCards />
         </motion.div>
 
-        {/* Notification Widget in top right */}
-        <motion.div
-          className="fixed top-20 right-6 z-30"
-          variants={itemVariants}
-        >
-          <NotificationPanel />
-        </motion.div>
+        {/* Notification Panel in dashboard */}
+        <AnimatePresence>
+          {showNotifications && (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-start justify-center pt-20"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                className="w-full max-w-2xl mx-4"
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -50, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <NotificationPanel 
+                  isOpen={showNotifications} 
+                  onClose={() => setShowNotifications(false)} 
+                />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
           {/* Main Content Area */}
