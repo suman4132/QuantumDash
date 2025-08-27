@@ -115,6 +115,7 @@ export function BackendAdvisor() {
 
         <Button 
           className="w-full bg-blue-600 hover:bg-blue-700"
+          onClick={() => window.location.href = '/dashboard?view=all-backends'}
           data-testid="button-view-all-backends"
         >
           View All Backends

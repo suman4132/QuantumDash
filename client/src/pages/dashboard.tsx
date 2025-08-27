@@ -12,6 +12,9 @@ import { queryClient } from "@/lib/queryClient";
 import { JobSimulator } from "@/lib/job-simulator";
 import { useUpdateJobStatus } from "@/hooks/use-jobs";
 import { useToast } from "@/hooks/use-toast";
+import { ActiveSessions } from "@/components/dashboard/active-sessions";
+import { BackendAdvisor } from "@/components/dashboard/backend-advisor";
+import { AllBackendsView } from "@/components/dashboard/all-backends-view";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,11 +41,22 @@ export default function Dashboard() {
   const [refreshInterval, setRefreshInterval] = useState(10);
   const updateJobStatus = useUpdateJobStatus();
   const { toast } = useToast();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentView, setCurrentView] = useState("dashboard");
+
+  // Check URL parameters for view switching
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const view = urlParams.get('view');
+    if (view === 'all-backends') {
+      setCurrentView('all-backends');
+    }
+  }, []);
 
   // Set up job simulator
   useEffect(() => {
     const simulator = JobSimulator.getInstance();
-    
+
     simulator.onStatusChange((jobId, status, error) => {
       updateJobStatus.mutate(
         { id: jobId, status, error },
@@ -63,7 +77,7 @@ export default function Dashboard() {
               cancelled: <XCircle className="w-4 h-4" />,
               queued: <Clock className="w-4 h-4" />,
             };
-            
+
             toast({
               title: "Job Status Update",
               description: `${jobId}: ${statusMessages[status]}`,
@@ -103,6 +117,15 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
   }, []);
 
+  const handleViewChange = (view: string) => {
+    setCurrentView(view);
+    if (view === "all-backends") {
+      window.history.pushState({}, '', '/dashboard?view=all-backends');
+    } else {
+      window.history.pushState({}, '', '/dashboard');
+    }
+  };
+
   return (
     <motion.div 
       className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20"
@@ -141,6 +164,7 @@ export default function Dashboard() {
         onSearch={handleSearch}
         onRefreshIntervalChange={handleRefreshIntervalChange}
         onManualRefresh={handleManualRefresh}
+        onViewChange={handleViewChange} // Pass the handler to Header
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
