@@ -16,6 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ActiveSessions } from "@/components/dashboard/active-sessions";
 import { BackendAdvisor } from "@/components/dashboard/backend-advisor";
 import { AllBackendsView } from "@/components/dashboard/all-backends-view";
+import { SessionForm } from "@/components/dashboard/session-form";
+import { AnimatePresence } from "framer-motion";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -43,6 +45,7 @@ export default function Dashboard() {
   const updateJobStatus = useUpdateJobStatus();
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showSessionForm, setShowSessionForm] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const currentView = searchParams.get('view') || 'dashboard';
@@ -117,6 +120,14 @@ export default function Dashboard() {
     } else {
       setSearchParams({});
     }
+  };
+
+  const handleOpenSessionForm = () => {
+    setShowSessionForm(true);
+  };
+
+  const handleCloseSessionForm = () => {
+    setShowSessionForm(false);
   };
 
   // Conditionally render different views
@@ -236,10 +247,17 @@ export default function Dashboard() {
 
           {/* Sidebar */}
           <motion.div variants={itemVariants}>
-            <Sidebar onViewChange={handleViewChange} />
+            <Sidebar onViewChange={handleViewChange} onOpenSessionForm={handleOpenSessionForm} />
           </motion.div>
         </div>
       </div>
+
+      {/* Session Form Modal */}
+      <AnimatePresence>
+        {showSessionForm && (
+          <SessionForm onClose={handleCloseSessionForm} />
+        )}
+      </AnimatePresence>
 
       {/* Floating Refresh Button */}
       <motion.div

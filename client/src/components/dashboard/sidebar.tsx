@@ -27,9 +27,10 @@ const itemVariants = {
 
 interface SidebarProps {
   onViewChange?: (view: string) => void;
+  onOpenSessionForm?: () => void;
 }
 
-export function Sidebar({ onViewChange }: SidebarProps) {
+export function Sidebar({ onViewChange, onOpenSessionForm }: SidebarProps) {
   return (
     <motion.div
       className="xl:col-span-1 space-y-6"
@@ -42,7 +43,7 @@ export function Sidebar({ onViewChange }: SidebarProps) {
       </motion.div>
 
       <motion.div variants={itemVariants}>
-        <ActiveSessions />
+        <ActiveSessions onOpenSessionForm={onOpenSessionForm} />
       </motion.div>
 
       <motion.div variants={itemVariants}>

@@ -1,10 +1,8 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSessions } from "@/hooks/use-jobs";
-import { SessionForm } from "./session-form";
 import { formatDistanceToNow } from "date-fns";
 
 const sessionVariants = {
@@ -23,8 +21,11 @@ const sessionVariants = {
   },
 };
 
-export function ActiveSessions() {
-  const [showSessionForm, setShowSessionForm] = useState(false);
+interface ActiveSessionsProps {
+  onOpenSessionForm?: () => void;
+}
+
+export function ActiveSessions({ onOpenSessionForm }: ActiveSessionsProps) {
   const { data: sessions = [], isLoading } = useSessions();
 
   const activeSessions = sessions.filter(session => session.status === "active");
@@ -89,19 +90,12 @@ export function ActiveSessions() {
         <Button 
           variant="outline"
           className="w-full border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-          onClick={() => setShowSessionForm(true)}
+          onClick={onOpenSessionForm}
           data-testid="button-new-session"
         >
           <Plus className="w-4 h-4 mr-2" />
           New Session
         </Button>
-
-        {/* Session Creation Form Modal */}
-        <AnimatePresence>
-          {showSessionForm && (
-            <SessionForm onClose={() => setShowSessionForm(false)} />
-          )}
-        </AnimatePresence>
       </CardContent>
     </Card>
   );
