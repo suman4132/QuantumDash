@@ -17,6 +17,7 @@ import { ActiveSessions } from "@/components/dashboard/active-sessions";
 import { BackendAdvisor } from "@/components/dashboard/backend-advisor";
 import { AllBackendsView } from "@/components/dashboard/all-backends-view";
 import { SessionForm } from "@/components/dashboard/session-form";
+import { NotificationWidget } from "@/components/dashboard/notification-widget";
 import { AnimatePresence } from "framer-motion";
 
 const containerVariants = {
@@ -227,6 +228,14 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <motion.div variants={itemVariants}>
           <StatsCards />
+        </motion.div>
+        
+        {/* Notification Widget in top right */}
+        <motion.div 
+          className="fixed top-20 right-6 z-30"
+          variants={itemVariants}
+        >
+          <NotificationWidget />
         </motion.div>
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
