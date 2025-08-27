@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { RefreshCw, CheckCircle, XCircle, Clock, Play } from "lucide-react";
 import { Header } from "@/components/dashboard/header";
@@ -42,16 +43,9 @@ export default function Dashboard() {
   const updateJobStatus = useUpdateJobStatus();
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentView, setCurrentView] = useState("dashboard");
-
-  // Check URL parameters for view switching
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const view = urlParams.get('view');
-    if (view === 'all-backends') {
-      setCurrentView('all-backends');
-    }
-  }, []);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const currentView = searchParams.get('view') || 'dashboard';
 
   // Set up job simulator
   useEffect(() => {
@@ -118,11 +112,10 @@ export default function Dashboard() {
   }, []);
 
   const handleViewChange = (view: string) => {
-    setCurrentView(view);
     if (view === "all-backends") {
-      window.history.pushState({}, '', '/dashboard?view=all-backends');
+      setSearchParams({ view: 'all-backends' });
     } else {
-      window.history.pushState({}, '', '/dashboard');
+      setSearchParams({});
     }
   };
 
