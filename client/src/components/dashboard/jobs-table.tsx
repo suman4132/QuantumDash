@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useJobs, useUpdateJobStatus, useDeleteJob } from "@/hooks/use-jobs";
 import { useToast } from "@/hooks/use-toast";
 import { JobForm } from "./job-form";
+import { JobDetailsModal } from "./job-details-modal";
 import type { Job, JobStatus } from "@shared/schema";
 import { format, formatDistanceToNow } from "date-fns";
 
@@ -36,6 +37,7 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
   const [sortBy, setSortBy] = useState<string>("submissionTime");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showJobForm, setShowJobForm] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   
   const { data, isLoading } = useJobs(currentPage, 10);
@@ -275,6 +277,7 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
                         variant="ghost"
                         size="icon"
                         className="text-blue-600 hover:text-blue-700"
+                        onClick={() => setSelectedJob(job)}
                         data-testid={`button-view-${job.id}`}
                       >
                         <Eye className="w-4 h-4" />
@@ -383,6 +386,16 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
       <AnimatePresence>
         {showJobForm && (
           <JobForm onClose={() => setShowJobForm(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Job Details Modal */}
+      <AnimatePresence>
+        {selectedJob && (
+          <JobDetailsModal 
+            job={selectedJob} 
+            onClose={() => setSelectedJob(null)} 
+          />
         )}
       </AnimatePresence>
     </Card>
