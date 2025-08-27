@@ -35,7 +35,11 @@ const cardVariants = {
   },
 };
 
-export function BackendAdvisor() {
+interface BackendAdvisorProps {
+  onViewChange?: (view: string) => void;
+}
+
+export function BackendAdvisor({ onViewChange }: BackendAdvisorProps) {
   const { data: backends = [], isLoading } = useBackends();
 
   const sortedBackends = [...backends].sort((a, b) => {
@@ -115,7 +119,7 @@ export function BackendAdvisor() {
 
         <Button 
           className="w-full bg-blue-600 hover:bg-blue-700"
-          onClick={() => window.location.href = '/dashboard?view=all-backends'}
+          onClick={() => onViewChange?.('all-backends')}
           data-testid="button-view-all-backends"
         >
           View All Backends

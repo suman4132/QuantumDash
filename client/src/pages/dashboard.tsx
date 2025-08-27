@@ -126,6 +126,59 @@ export default function Dashboard() {
     }
   };
 
+  // Conditionally render different views
+  if (currentView === 'all-backends') {
+    return (
+      <motion.div 
+        className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Floating background elements */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"
+            animate={{ 
+              scale: [1, 1.1, 1],
+              rotate: [0, 180, 360],
+            }}
+            transition={{ 
+              duration: 20, 
+              repeat: Infinity, 
+              ease: "linear" 
+            }}
+          />
+          <motion.div
+            className="absolute top-3/4 right-1/4 w-64 h-64 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"
+            animate={{ 
+              scale: [1.1, 1, 1.1],
+              rotate: [360, 180, 0],
+            }}
+            transition={{ 
+              duration: 15, 
+              repeat: Infinity, 
+              ease: "linear" 
+            }}
+          />
+        </div>
+        
+        <Header
+          onSearch={handleSearch}
+          onRefreshIntervalChange={handleRefreshIntervalChange}
+          onManualRefresh={handleManualRefresh}
+          onViewChange={handleViewChange}
+        />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <motion.div variants={itemVariants}>
+            <AllBackendsView onBack={() => handleViewChange('dashboard')} />
+          </motion.div>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div 
       className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20"
@@ -190,7 +243,7 @@ export default function Dashboard() {
 
           {/* Sidebar */}
           <motion.div variants={itemVariants}>
-            <Sidebar />
+            <Sidebar onViewChange={handleViewChange} />
           </motion.div>
         </div>
       </div>

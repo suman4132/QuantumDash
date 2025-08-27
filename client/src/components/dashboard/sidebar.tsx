@@ -25,7 +25,11 @@ const itemVariants = {
   },
 };
 
-export function Sidebar() {
+interface SidebarProps {
+  onViewChange?: (view: string) => void;
+}
+
+export function Sidebar({ onViewChange }: SidebarProps) {
   return (
     <motion.div
       className="xl:col-span-1 space-y-6"
@@ -34,17 +38,17 @@ export function Sidebar() {
       animate="visible"
     >
       <motion.div variants={itemVariants}>
-        <BackendAdvisor />
+        <BackendAdvisor onViewChange={onViewChange} />
       </motion.div>
-      
+
       <motion.div variants={itemVariants}>
         <ActiveSessions />
       </motion.div>
-      
+
       <motion.div variants={itemVariants}>
         <ExportOptions />
       </motion.div>
-      
+
       <motion.div variants={itemVariants}>
         <SystemStatus />
       </motion.div>
