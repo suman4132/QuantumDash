@@ -19,8 +19,48 @@ import {
   Twitter,
   Youtube,
   Menu,
-  X
+  X,
+  Sparkles,
+  Globe
 } from "lucide-react";
+
+// Floating particles component
+const FloatingParticles = () => {
+  const particles = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    size: Math.random() * 4 + 2,
+    left: Math.random() * 100,
+    animationDelay: Math.random() * 5,
+    duration: Math.random() * 10 + 10
+  }));
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((particle) => (
+        <motion.div
+          key={particle.id}
+          className="absolute bg-blue-400/20 rounded-full"
+          style={{
+            width: particle.size,
+            height: particle.size,
+            left: `${particle.left}%`,
+          }}
+          animate={{
+            y: [window.innerHeight + 100, -100],
+            opacity: [0, 1, 1, 0],
+            scale: [0, 1, 1, 0]
+          }}
+          transition={{
+            duration: particle.duration,
+            delay: particle.animationDelay,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+      ))}
+    </div>
+  );
+};
 
 export default function Landing() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -115,7 +155,53 @@ export default function Landing() {
           className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-pink-900/20"
           style={{ y: backgroundY }}
         />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="1"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5" />
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 20px 20px, rgba(156, 146, 172, 0.1) 1px, transparent 1px)`,
+            backgroundSize: '40px 40px'
+          }} />
+        </div>
+        
+        {/* Floating geometric shapes */}
+        <motion.div
+          className="absolute top-20 left-10 w-32 h-32 border border-blue-400/20 rounded-full"
+          animate={{
+            rotate: [0, 360],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+        <motion.div
+          className="absolute top-40 right-20 w-24 h-24 border border-purple-400/20"
+          animate={{
+            rotate: [0, -180, 0],
+            y: [-10, 10, -10],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div
+          className="absolute bottom-40 left-20 w-16 h-16 bg-gradient-to-r from-pink-400/10 to-blue-400/10 rounded-lg"
+          animate={{
+            rotate: [0, 45, 0],
+            x: [-5, 5, -5],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        
+        <FloatingParticles />
       </div>
 
       {/* Header */}
@@ -213,29 +299,73 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6">
+            <motion.h1 
+              className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
               Experience the Future of{" "}
-              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              <motion.span 
+                className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent inline-block"
+                animate={{
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+                style={{
+                  backgroundSize: "200% 100%"
+                }}
+              >
                 Quantum Computing
-              </span>
+              </motion.span>
               {" "}in the Cloud
-            </h1>
+            </motion.h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto">
               Run, learn, and innovate with powerful quantum systems accessible anywhere. 
               Join the quantum revolution today.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button 
-                onClick={handleGetStarted}
-                size="lg" 
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg px-8 py-4"
+            <motion.div 
+              className="flex flex-col sm:flex-row items-center justify-center gap-4"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                Get Started <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-gray-600 text-white hover:bg-gray-800">
-                Explore Docs
-              </Button>
-            </div>
+                <Button 
+                  onClick={handleGetStarted}
+                  size="lg" 
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg px-8 py-4 relative overflow-hidden group"
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-white/20"
+                    initial={{ x: "-100%" }}
+                    whileHover={{ x: "100%" }}
+                    transition={{ duration: 0.6 }}
+                  />
+                  <span className="relative flex items-center">
+                    Get Started <ArrowRight className="ml-2 w-5 h-5" />
+                  </span>
+                </Button>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-gray-600 text-white hover:bg-gray-800 relative group">
+                  <span className="relative flex items-center">
+                    <BookOpen className="mr-2 w-5 h-5" />
+                    Explore Docs
+                  </span>
+                </Button>
+              </motion.div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -264,14 +394,23 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ y: -10 }}
               >
-                <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 transition-all duration-300 group">
-                  <CardContent className="p-6 text-center">
-                    <div className="mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 hover:border-blue-500/50 transition-all duration-300 group relative overflow-hidden">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100"
+                    transition={{ duration: 0.3 }}
+                  />
+                  <CardContent className="p-6 text-center relative z-10">
+                    <motion.div 
+                      className="mb-4 group-hover:scale-110 transition-transform duration-300"
+                      whileHover={{ rotate: [0, -10, 10, 0] }}
+                      transition={{ duration: 0.5 }}
+                    >
                       {feature.icon}
-                    </div>
+                    </motion.div>
                     <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-gray-400">{feature.description}</p>
+                    <p className="text-gray-400 group-hover:text-gray-300 transition-colors duration-300">{feature.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -302,13 +441,60 @@ export default function Landing() {
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
+            whileHover={{ scale: 1.02 }}
           >
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-1 rounded-xl">
-              <div className="bg-gray-900 rounded-lg overflow-hidden">
-                <div className="h-64 md:h-96 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                  <div className="text-center">
-                    <Atom className="w-16 h-16 text-blue-400 mx-auto mb-4" />
-                    <p className="text-gray-400">Dashboard Preview Coming Soon</p>
+            <div className="relative">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl blur-xl opacity-50"
+                animate={{
+                  scale: [1, 1.05, 1],
+                  opacity: [0.5, 0.7, 0.5],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+              <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-1 rounded-xl relative">
+                <div className="bg-gray-900 rounded-lg overflow-hidden">
+                  <div className="h-64 md:h-96 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center relative">
+                    <motion.div
+                      className="text-center"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8, delay: 0.3 }}
+                    >
+                      <motion.div
+                        animate={{ 
+                          rotate: [0, 360],
+                          scale: [1, 1.1, 1]
+                        }}
+                        transition={{ 
+                          duration: 4, 
+                          repeat: Infinity,
+                          ease: "linear"
+                        }}
+                      >
+                        <Atom className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+                      </motion.div>
+                      <p className="text-gray-400 mb-2">Quantum Dashboard</p>
+                      <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+                        <Sparkles className="w-4 h-4" />
+                        <span>Real-time quantum computing</span>
+                        <Globe className="w-4 h-4" />
+                      </div>
+                    </motion.div>
+                    
+                    {/* Simulated dashboard elements */}
+                    <div className="absolute top-4 left-4 right-4 flex justify-between items-center opacity-30">
+                      <div className="flex space-x-2">
+                        <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                        <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                        <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                      </div>
+                      <div className="text-xs text-gray-500">QuantumCloud Dashboard</div>
+                    </div>
                   </div>
                 </div>
               </div>
