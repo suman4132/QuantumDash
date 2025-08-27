@@ -7,6 +7,22 @@ import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/hooks/use-theme";
 import { useJobStats, useJobs } from "@/hooks/use-jobs";
 import { motion } from "framer-motion";
+import { 
+  Settings, 
+  Filter,
+  Download,
+  BarChart3,
+  LogOut,
+  User
+} from "lucide-react";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/use-auth";
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -17,21 +33,23 @@ interface HeaderProps {
 }
 
 export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onViewChange, onNotificationToggle }: HeaderProps) {
-  const { theme, toggleTheme } = useTheme();
-  const { data: jobsData } = useJobs(1, 50);
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshInterval, setRefreshInterval] = useState("10");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+  const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
+
+  const { data: jobsData } = useJobs(1, 50);
+
   const jobs = jobsData?.jobs || [];
-  
+
   // Get recent completed jobs (last 24 hours) and running jobs for notification count
   const recentCompletedJobs = jobs.filter(job => 
     (job.status === "done" || job.status === "failed") && 
     job.endTime && 
     new Date(job.endTime).getTime() > Date.now() - 24 * 60 * 60 * 1000
   );
-  
+
   const runningJobs = jobs.filter(job => job.status === "running");
   const notificationCount = recentCompletedJobs.length + runningJobs.length;
 
@@ -130,7 +148,7 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
               )}
             </div>
 
-            
+
 
             {/* Notification Bell */}
             <div className="relative">
@@ -138,61 +156,43 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
                 variant="ghost"
                 size="icon"
                 onClick={onNotificationToggle}
-                className="hover:bg-blue-50 dark:hover:bg-blue-900/20 relative"
-                data-testid="button-notifications"
+                className="relative"
               >
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Bell className="h-4 w-4" />
-                </motion.div>
-                {notificationCount > 0 && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1"
-                  >
-                    <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-500 text-white border-2 border-white dark:border-gray-800">
-                      {notificationCount > 99 ? '99+' : notificationCount}
-                    </Badge>
-                  </motion.div>
-                )}
+                <Bell className="w-5 h-5" />
+                <Badge variant="destructive" className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center text-xs">
+                  3
+                </Badge>
               </Button>
+
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-2">
+                    <p className="text-sm font-medium">{user?.name || 'User'}</p>
+                    <p className="text-xs text-gray-500">{user?.email || 'user@example.com'}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                    {theme === 'dark' ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                    {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout} className="text-red-600 dark:text-red-400">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-
-            {/* Manual Refresh Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleManualRefresh}
-              className="hover:bg-green-50 dark:hover:bg-green-900/20"
-              data-testid="button-manual-refresh"
-            >
-              <motion.div
-                animate={isRefreshing ? { rotate: 360 } : {}}
-                transition={{ duration: 0.6 }}
-              >
-                <RefreshCw className="h-4 w-4" />
-              </motion.div>
-            </Button>
-
-            {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="hover:bg-purple-50 dark:hover:bg-purple-900/20"
-              data-testid="button-theme-toggle"
-            >
-              <motion.div
-                whileHover={{ rotate: 15 }}
-                transition={{ duration: 0.2 }}
-              >
-                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </motion.div>
-            </Button>
           </motion.div>
         </div>
       </div>
