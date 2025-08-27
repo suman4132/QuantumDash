@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { TrendingUp, Play, Clock, BarChart3 } from "lucide-react";
+import { TrendingUp, Play, Clock, BarChart3, CheckCircle, XCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useJobStats } from "@/hooks/use-jobs";
 
@@ -63,12 +63,28 @@ export function StatsCards() {
       color: "from-purple-500 to-purple-600",
       bgColor: "bg-purple-50 dark:bg-purple-900/20",
     },
+    {
+      title: "Completed Jobs",
+      value: stats?.completedJobs || 0,
+      change: "All done",
+      icon: CheckCircle,
+      color: "from-cyan-500 to-cyan-600",
+      bgColor: "bg-cyan-50 dark:bg-cyan-900/20",
+    },
+    {
+      title: "Failed Jobs",
+      value: stats?.failedJobs || 0,
+      change: "Needs attention",
+      icon: XCircle,
+      color: "from-red-500 to-red-600",
+      bgColor: "bg-red-50 dark:bg-red-900/20",
+    },
   ];
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+        {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i} className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
             <CardContent className="p-6">
               <div className="animate-pulse">
@@ -84,7 +100,7 @@ export function StatsCards() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
       {cards.map((card, index) => (
         <motion.div
           key={card.title}
