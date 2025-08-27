@@ -180,7 +180,7 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
                   <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
                     {theme === 'dark' ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
                     {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                  </DropdownMenuMenuItem>
+                  </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
