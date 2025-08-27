@@ -166,7 +166,7 @@ export default function Dashboard() {
             }}
           />
         </div>
-        
+
         <Header
           onSearch={handleSearch}
           onRefreshIntervalChange={handleRefreshIntervalChange}

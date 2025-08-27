@@ -99,7 +99,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
         exit={{ opacity: 0 }}
         onClick={onClose}
       />
-      
+
       {/* Panel */}
       <motion.div
         className="fixed top-0 right-0 h-full w-96 bg-white dark:bg-gray-800 shadow-2xl z-50 overflow-hidden"
@@ -178,7 +178,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                   {recentCompletedJobs.length}
                 </Badge>
               </div>
-              
+
               <div className="space-y-3">
                 <AnimatePresence>
                   {recentCompletedJobs.map((job, i) => (
@@ -228,7 +228,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                     {runningJobs.length}
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-2">
                   {runningJobs.map((job, i) => (
                     <motion.div
@@ -265,7 +265,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                     {queuedJobs.length}
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-2">
                   {queuedJobs.map((job, i) => (
                     <motion.div

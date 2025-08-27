@@ -13,9 +13,10 @@ interface HeaderProps {
   onSearch: (query: string) => void;
   onRefreshIntervalChange: (interval: number) => void;
   onManualRefresh: () => void;
+  onViewChange?: (view: string) => void;
 }
 
-export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh }: HeaderProps) {
+export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onViewChange }: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
   const { data: stats } = useJobStats();
   const [searchQuery, setSearchQuery] = useState("");
