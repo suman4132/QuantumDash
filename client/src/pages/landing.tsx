@@ -169,7 +169,8 @@ export default function Landing() {
       name: 'Demo User',
       email: 'demo@quantumcloud.com'
     });
-    navigate('/dashboard');
+    // Redirect to dashboard after successful login
+    setTimeout(() => navigate('/dashboard'), 100);
   };
 
   const handleSignUp = () => {
@@ -178,7 +179,8 @@ export default function Landing() {
       name: 'New User',
       email: 'newuser@quantumcloud.com'
     });
-    navigate('/dashboard');
+    // Redirect to dashboard after successful signup
+    setTimeout(() => navigate('/dashboard'), 100);
   };
 
   const handleGetStarted = () => {
@@ -421,8 +423,8 @@ export default function Landing() {
                 </Button>
               ) : (
                 <>
-                  <Button variant="ghost" onClick={() => navigate('/login')}>Login</Button>
-                  <Button onClick={() => navigate('/signup')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                  <Button variant="ghost" onClick={handleLogin}>Login</Button>
+                  <Button onClick={handleSignUp} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                     Sign Up
                   </Button>
                 </>
@@ -462,8 +464,8 @@ export default function Landing() {
                   </Button>
                 ) : (
                   <>
-                    <Button onClick={() => navigate('/login')} variant="ghost" className="w-full">Login</Button>
-                    <Button onClick={() => navigate('/signup')} className="w-full bg-gradient-to-r from-blue-600 to-purple-600">
+                    <Button onClick={handleLogin} variant="ghost" className="w-full">Login</Button>
+                    <Button onClick={handleSignUp} className="w-full bg-gradient-to-r from-blue-600 to-purple-600">
                       Sign Up
                     </Button>
                   </>

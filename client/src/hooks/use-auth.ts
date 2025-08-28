@@ -26,11 +26,16 @@ export function useAuth() {
   }, []);
 
   const login = (userData: User) => {
-    // Simulate login - in a real app, this would make an API call
-    localStorage.setItem('auth-token', 'demo-token-' + Date.now());
-    localStorage.setItem('user-data', JSON.stringify(userData));
-    setIsAuthenticated(true);
-    setUser(userData);
+    try {
+      // Simulate login - in a real app, this would make an API call
+      localStorage.setItem('auth-token', 'demo-token-' + Date.now());
+      localStorage.setItem('user-data', JSON.stringify(userData));
+      setIsAuthenticated(true);
+      setUser(userData);
+      return Promise.resolve();
+    } catch (error) {
+      return Promise.reject(error);
+    }
   };
 
   const logout = () => {
@@ -41,13 +46,17 @@ export function useAuth() {
   };
 
   const signup = (userData: Omit<User, 'id'>) => {
-    // Simulate signup - in a real app, this would make an API call
-    const newUser: User = {
-      ...userData,
-      id: 'user_' + Date.now()
-    };
-    
-    login(newUser);
+    try {
+      // Simulate signup - in a real app, this would make an API call
+      const newUser: User = {
+        ...userData,
+        id: 'user_' + Date.now()
+      };
+      
+      return login(newUser);
+    } catch (error) {
+      return Promise.reject(error);
+    }
   };
 
   return {
