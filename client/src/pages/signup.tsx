@@ -27,8 +27,11 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // Validate form
-      if (!name || !email || !password || !confirmPassword) {
+      if (!name || !email || !password) {
         throw new Error('Please fill in all fields');
       }
 
@@ -36,13 +39,7 @@ export default function Signup() {
         throw new Error('Passwords do not match');
       }
 
-      if (password.length < 6) {
-        throw new Error('Password must be at least 6 characters long');
-      }
-
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
+      // Create user account
       const userData = {
         name: name,
         email: email
@@ -69,13 +66,13 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden">
         {Array.from({ length: 50 }).map((_, i) => (
           <motion.div
             key={i}
-            className="absolute bg-purple-400/10 rounded-full"
+            className="absolute bg-blue-400/10 rounded-full"
             style={{
               width: Math.random() * 6 + 2,
               height: Math.random() * 6 + 2,
@@ -124,7 +121,7 @@ export default function Signup() {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.3, type: "spring" }}
-              className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4"
+              className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4"
             >
               <motion.div
                 animate={{ rotate: 360 }}
@@ -134,9 +131,9 @@ export default function Signup() {
                 ⚛️
               </motion.div>
             </motion.div>
-            <CardTitle className="text-2xl font-bold text-white">Join QuantumCloud</CardTitle>
+            <CardTitle className="text-2xl font-bold text-white">Create Account</CardTitle>
             <CardDescription className="text-white/70">
-              Create your account to start your quantum journey
+              Join QuantumCloud and start your quantum journey
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -151,7 +148,7 @@ export default function Signup() {
                     placeholder="Enter your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-purple-400"
+                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-blue-400"
                     required
                   />
                 </div>
@@ -166,7 +163,7 @@ export default function Signup() {
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-purple-400"
+                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-blue-400"
                     required
                   />
                 </div>
@@ -181,7 +178,7 @@ export default function Signup() {
                     placeholder="Create a password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-purple-400"
+                    className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-blue-400"
                     required
                   />
                   <Button
@@ -205,7 +202,7 @@ export default function Signup() {
                     placeholder="Confirm your password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-purple-400"
+                    className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-blue-400"
                     required
                   />
                   <Button
@@ -221,7 +218,7 @@ export default function Signup() {
               </div>
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating Account..." : "Create Account"}
@@ -230,7 +227,7 @@ export default function Signup() {
             <div className="mt-6 text-center">
               <p className="text-white/70">
                 Already have an account?{' '}
-                <Link to="/login" className="text-purple-400 hover:text-purple-300 font-semibold">
+                <Link to="/login" className="text-blue-400 hover:text-blue-300 font-semibold">
                   Sign in
                 </Link>
               </p>

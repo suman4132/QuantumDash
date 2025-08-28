@@ -163,31 +163,20 @@ export default function Landing() {
   const textY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
 
   const handleLogin = () => {
-    // Simulate login with demo user data
-    login({
-      id: 'demo-user',
-      name: 'Demo User',
-      email: 'demo@quantumcloud.com'
-    });
-    // Redirect to dashboard after successful login
-    setTimeout(() => navigate('/dashboard'), 100);
+    // Navigate to login page
+    navigate('/login');
   };
 
   const handleSignUp = () => {
-    // Simulate signup with demo user data
-    signup({
-      name: 'New User',
-      email: 'newuser@quantumcloud.com'
-    });
-    // Redirect to dashboard after successful signup
-    setTimeout(() => navigate('/dashboard'), 100);
+    // Navigate to signup page
+    navigate('/signup');
   };
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
       navigate('/dashboard');
     } else {
-      handleSignUp();
+      navigate('/signup');
     }
   };
 
