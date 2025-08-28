@@ -276,6 +276,25 @@ export default function Dashboard() {
                 {/* Comprehensive Status Overview */}
                 {currentView === 'overview' && (
                   <div className="space-y-6">
+                    {/* Analytics Charts Section */}
+                    <div className="mb-8">
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics Overview</h2>
+                          <p className="text-gray-600 dark:text-gray-400">Real-time insights and performance metrics</p>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => handleViewChange('analytics')}
+                          className="flex items-center space-x-2"
+                        >
+                          <BarChart3 className="w-4 h-4" />
+                          <span>View Full Analytics</span>
+                        </Button>
+                      </div>
+                      <AnalyticsCharts />
+                    </div>
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
                         <CardHeader>
