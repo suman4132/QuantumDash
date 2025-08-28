@@ -1,10 +1,8 @@
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Zap, Clock, BarChart3, CheckCircle, XCircle } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { useJobStats } from "@/hooks/use-jobs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Activity, Clock, CheckCircle, XCircle, TrendingUp, Zap } from "lucide-react";
+import { Activity, Clock, CheckCircle, XCircle, TrendingUp, Zap, BarChart3 } from "lucide-react";
+import { useJobStats } from "@/hooks/use-jobs";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";

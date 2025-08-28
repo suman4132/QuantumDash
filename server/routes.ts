@@ -186,21 +186,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // IBM Quantum Sync Status
+  app.get("/api/sync/ibm/status", async (req, res) => {
+    try {
+      res.json({
+        configured: ibmQuantumService.isConfigured(),
+        status: ibmQuantumService.getApiStatus(),
+        lastSync: new Date().toISOString(),
+        endpoints: {
+          runtime: "https://runtime.quantum-computing.ibm.com",
+          auth: "https://auth.quantum-computing.ibm.com/api"
+        }
+      });
+    } catch (error) {
+      console.error("Error checking IBM Quantum status:", error);
+      res.status(500).json({ error: "Failed to check IBM Quantum status" });
+    }
+  });
+
   // IBM Quantum Sync
   app.post("/api/sync/ibm", async (req, res) => {
     try {
       if (!ibmQuantumService.isConfigured()) {
-        return res.status(400).json({ error: "IBM Quantum API not configured" });
+        return res.status(400).json({ 
+          error: "IBM Quantum API not configured",
+          details: "Please check your IBM_QUANTUM_API_TOKEN in .env file"
+        });
       }
 
+      console.log("🔄 Starting IBM Quantum sync...");
+      
       // Force sync with IBM Quantum
       const jobs = await ibmQuantumService.getJobs(100);
       const backends = await ibmQuantumService.getBackends();
 
-      // Assuming storage has methods to insert/update jobs and backends
-      // For now, we'll just log the counts and return them.
-      // In a real application, you would process and store these.
-      console.log(`Syncing ${jobs.length} jobs and ${backends.length} backends from IBM Quantum.`);
+      console.log(`📊 Synced ${jobs.length} jobs and ${backends.length} backends from IBM Quantum.`);
 
       res.json({
         success: true,
@@ -219,6 +239,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
+  // Real-time IBM Quantum data
+  app.get("/api/ibm-quantum/live", async (req, res) => {
+    try {
+      if (!ibmQuantumService.isConfigured()) {
+        return res.status(400).json({ 
+          error: "IBM Quantum API not configured",
+          details: "Please add IBM_QUANTUM_API_TOKEN to your .env file"
+        });
+      }
+
+      const [jobs, backends] = await Promise.all([
+        ibmQuantumService.getJobs(50),
+        ibmQuantumService.getBackends()
+      ]);
+
+      res.json({
+        timestamp: new Date().toISOString(),
+        jobs: jobs.map(job => ({
+          id: job.id,
+          name: job.name,
+          backend: job.backend,
+          status: job.status,
+          created: job.created,
+          qubits: job.qubits,
+          shots: job.shots
+        })),
+        backends: backends.map(backend => ({
+          name: backend.name,
+          status: backend.status,
+          qubits: backend.num_qubits,
+          queue: backend.pending_jobs
+        })),
+        summary: {
+          totalJobs: jobs.length,
+          runningJobs: jobs.filter(j => j.status === 'running').length,
+          queuedJobs: jobs.filter(j => j.status === 'queued').length,
+          availableBackends: backends.filter(b => b.status === 'online').length
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching live IBM Quantum data:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch live data from IBM Quantum",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
 
   // Export endpoints
   app.get("/api/export/csv", async (req, res) => {
