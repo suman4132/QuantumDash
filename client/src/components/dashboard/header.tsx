@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Moon, Sun, Search, RefreshCw, Bell, CloudDownload } from "lucide-react";
+import { Moon, Sun, Search, RefreshCw, Bell, CloudDownload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -53,6 +53,8 @@ function LiveJobIndicator() {
 
 export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onViewChange, onNotificationToggle }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState("10");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -160,6 +162,50 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
     }
   };
 
+  // Search suggestions based on common keywords
+  const searchSuggestions = [
+    "running", "queued", "done", "failed", "cancelled",
+    "ibm_cairo", "ibm_brisbane", "ibm_kyoto", "simulator",
+    "VQE", "QAOA", "Grover", "Shor", "optimization",
+    "error", "success", "timeout", "circuit", "backend"
+  ];
+
+  useEffect(() => {
+    if (searchQuery.length > 0) {
+      const filtered = searchSuggestions.filter(suggestion =>
+        suggestion.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setSuggestions(filtered);
+      setShowSuggestions(filtered.length > 0);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [searchQuery]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearch(searchQuery);
+    setShowSuggestions(false);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    onSearch(value); // Real-time search
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    onSearch(suggestion);
+    setShowSuggestions(false);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    onSearch("");
+    setShowSuggestions(false);
+  };
+
+
   return (
     <motion.header 
       className="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-700"
@@ -199,18 +245,50 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            {/* Search Bar */}
+            {/* Enhanced Search Bar */}
+          <form onSubmit={handleSearch} className="flex-1 max-w-md mx-4">
             <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 z-10" />
               <Input
                 type="text"
-                placeholder="Search jobs, backends, IDs..."
+                placeholder="Search jobs, backends, status, keywords..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-64 pl-10 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500"
-                data-testid="input-search"
+                onChange={(e) => handleSearchChange(e.target.value)}
+                onFocus={() => searchQuery.length > 0 && setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                className="pl-9 pr-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50"
               />
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              {searchQuery && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSearch}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+
+              {/* Search Suggestions Dropdown */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 max-h-40 overflow-y-auto">
+                  {suggestions.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                    >
+                      <div className="flex items-center">
+                        <Search className="h-3 w-3 mr-2 text-gray-400" />
+                        <span className="capitalize">{suggestion}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+          </form>
 
             {/* Auto-refresh Controls */}
             <div className="flex items-center space-x-2">

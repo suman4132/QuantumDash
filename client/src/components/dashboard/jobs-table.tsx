@@ -47,18 +47,50 @@ export function JobsTable({ searchQuery }: JobsTableProps) {
   const deleteJob = useDeleteJob();
   const { toast } = useToast();
 
-  // Filter and sort jobs
+  // Enhanced search with keyword matching
   const filteredJobs = jobs
     .filter((job) => {
       if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
-          job.id.toLowerCase().includes(query) ||
-          job.backend.toLowerCase().includes(query) ||
-          job.status.toLowerCase().includes(query) ||
-          job.name?.toLowerCase().includes(query) ||
-          job.tags?.some(tag => tag.toLowerCase().includes(query))
+        const query = searchQuery.toLowerCase().trim();
+        
+        // Direct field matches
+        const directMatches = [
+          job.id.toLowerCase(),
+          job.backend.toLowerCase(),
+          job.status.toLowerCase(),
+          job.name?.toLowerCase() || "",
+          ...(job.tags || []).map(tag => tag.toLowerCase()),
+          job.error?.toLowerCase() || ""
+        ];
+
+        // Check for direct matches
+        const hasDirectMatch = directMatches.some(field => field.includes(query));
+        
+        // Enhanced keyword matching
+        const keywords = query.split(' ').filter(word => word.length > 0);
+        const hasKeywordMatch = keywords.every(keyword => 
+          directMatches.some(field => field.includes(keyword))
         );
+
+        // Special keyword handling
+        const specialKeywords = {
+          'error': job.status === 'failed' || Boolean(job.error),
+          'success': job.status === 'done',
+          'active': job.status === 'running',
+          'pending': job.status === 'queued',
+          'timeout': job.error?.toLowerCase().includes('timeout') || false,
+          'circuit': job.name?.toLowerCase().includes('circuit') || false,
+          'simulation': job.backend.toLowerCase().includes('simulator'),
+          'hardware': !job.backend.toLowerCase().includes('simulator'),
+          'recent': new Date(job.submissionTime).getTime() > Date.now() - 3600000, // Last hour
+          'today': new Date(job.submissionTime).toDateString() === new Date().toDateString()
+        };
+
+        const hasSpecialMatch = Object.entries(specialKeywords).some(([keyword, condition]) =>
+          query.includes(keyword.toLowerCase()) && condition
+        );
+
+        return hasDirectMatch || hasKeywordMatch || hasSpecialMatch;
       }
       return true;
     })

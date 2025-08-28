@@ -45,23 +45,7 @@ const itemVariants = {
   },
 };
 
-// Function to render current view based on 'currentView' state
-const renderCurrentView = (currentView) => {
-  switch (currentView) {
-    case 'overview':
-      return null; // Overview content is handled separately below
-    case 'jobs':
-      return <JobsTable />;
-    case 'sessions':
-      return <ActiveSessions />;
-    case 'analytics':
-      return <AnalyticsCharts />;
-    case 'backends':
-      return <AllBackendsView />;
-    default:
-      return null;
-  }
-};
+
 
 
 export default function Dashboard() {
@@ -273,6 +257,28 @@ export default function Dashboard() {
                   <StatsCards />
                 </div>
 
+                {/* Show search results indicator */}
+                {searchQuery && (
+                  <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Search className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                          Searching for: "{searchQuery}"
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSearchQuery("")}
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Comprehensive Status Overview */}
                 {currentView === 'overview' && (
                   <div className="space-y-6">
@@ -329,7 +335,7 @@ export default function Dashboard() {
                         </h3>
                       </CardHeader>
                       <CardContent>
-                        <JobsTable />
+                        <JobsTable searchQuery={searchQuery} />
                       </CardContent>
                     </Card>
                   </div>
@@ -347,7 +353,9 @@ export default function Dashboard() {
                     <AnalyticsCharts />
                   </div>
                 )}
-                {renderCurrentView(currentView)}
+                {currentView === 'jobs' && <JobsTable searchQuery={searchQuery} />}
+                {currentView === 'sessions' && <ActiveSessions />}
+                {currentView === 'backends' && <AllBackendsView />}
               </motion.div>
             </AnimatePresence>
           </div>
