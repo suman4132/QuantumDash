@@ -274,28 +274,42 @@ export default function Dashboard() {
 
                 {/* Comprehensive Status Overview */}
                 {currentView === 'overview' && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
-                      <CardHeader>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-                          <Activity className="w-5 h-5 mr-2 text-blue-500" />
-                          Job Status Distribution
-                        </h3>
-                      </CardHeader>
-                      <CardContent>
-                        <JobStatusDistribution />
-                      </CardContent>
-                    </Card>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
+                        <CardHeader>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                            <Activity className="w-5 h-5 mr-2 text-blue-500" />
+                            Job Status Distribution
+                          </h3>
+                        </CardHeader>
+                        <CardContent>
+                          <JobStatusDistribution />
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
+                        <CardHeader>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                            <Zap className="w-5 h-5 mr-2 text-green-500" />
+                            Live Activity Feed
+                          </h3>
+                        </CardHeader>
+                        <CardContent>
+                          <LiveActivityFeed />
+                        </CardContent>
+                      </Card>
+                    </div>
 
                     <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
                       <CardHeader>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-                          <Zap className="w-5 h-5 mr-2 text-green-500" />
-                          Live Activity
+                          <BarChart3 className="w-5 h-5 mr-2 text-purple-500" />
+                          Recent Jobs Overview
                         </h3>
                       </CardHeader>
                       <CardContent>
-                        <LiveActivityFeed />
+                        <JobsTable />
                       </CardContent>
                     </Card>
                   </div>

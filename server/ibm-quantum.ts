@@ -32,14 +32,15 @@ class IBMQuantumService {
 
   constructor() {
     this.apiToken = process.env.IBM_QUANTUM_API_TOKEN || '';
-    this.baseUrl = 'https://auth.quantum-computing.ibm.com/api';
-    this.runtimeUrl = 'https://runtime.quantum-computing.ibm.com';
+    this.baseUrl = 'https://runtime.quantum-computing.ibm.com'; // This seems to be the primary base URL for runtime operations
+    this.runtimeUrl = 'https://runtime.quantum-computing.ibm.com'; // Redundant but kept for consistency with original code
 
     if (!this.apiToken) {
       console.warn('⚠️  IBM Quantum API token not found in environment variables');
-      console.log('Please add IBM_QUANTUM_API_TOKEN to your .env file');
+      console.warn('Please add IBM_QUANTUM_API_TOKEN to your .env file');
+      console.warn('Using simulated data for demonstration');
     } else {
-      console.log('✅ IBM Quantum service initialized with API token');
+      console.log('✅ IBM Quantum API configured successfully');
       console.log(`🔗 Runtime URL: ${this.runtimeUrl}`);
     }
   }
@@ -64,7 +65,7 @@ class IBMQuantumService {
         headers,
         data,
         timeout: 30000,
-        validateStatus: (status) => status < 500
+        validateStatus: (status) => status < 500 // Allows for retries on specific status codes, but should be handled carefully
       });
 
       if (response.status >= 400) {
@@ -92,29 +93,40 @@ class IBMQuantumService {
   }
 
   async getJobs(limit: number = 50): Promise<IBMQuantumJob[]> {
+    if (!this.apiToken) {
+      console.warn('API token not available. Returning simulated jobs.');
+      return this.generateSampleJobs(limit);
+    }
+
     try {
       console.log(`📊 Fetching ${limit} jobs from IBM Quantum...`);
 
-      // Updated endpoints based on IBM Quantum Runtime REST API documentation
+      // Attempting to use the most reliable endpoint first, then fallback
       const endpoints = [
-        `${this.runtimeUrl}/jobs?limit=${limit}&descending=true`,
-        `${this.runtimeUrl}/v1/jobs?limit=${limit}&descending=true`,
-        `https://api.quantum-computing.ibm.com/runtime/jobs?limit=${limit}&descending=true`,
-        `https://runtime.quantum-computing.ibm.com/jobs?limit=${limit}&sort=created&order=desc`
+        `${this.runtimeUrl}/jobs?limit=${limit}&sort=created&order=desc`, // Common runtime endpoint
+        `${this.baseUrl}/jobs?limit=${limit}&sort=created&order=desc`, // Alternative base URL endpoint
+        `https://api.quantum.ibm.com/v1/jobs?limit=${limit}&sort=created&order=desc` // Older API endpoint
       ];
 
-      let data = null;
-      let lastError = null;
+      let data: any = null;
+      let lastError: any = null;
 
       for (const endpoint of endpoints) {
         try {
           console.log(`🔄 Trying endpoint: ${endpoint}`);
           data = await this.makeAuthenticatedRequest(endpoint);
-          if (data && !data.error) {
+          if (data && !data.error && (Array.isArray(data.jobs) || Array.isArray(data.data))) {
             console.log(`✅ Successfully fetched from: ${endpoint}`);
             break;
-          } else {
-            console.log(`⚠️  Endpoint returned error: ${endpoint}`);
+          } else if (data && data.error) {
+            console.log(`⚠️  Endpoint ${endpoint} returned an API error:`, data.error);
+            lastError = new Error(`API Error: ${data.error.message || data.error}`);
+          } else if (!data) {
+            console.log(`⚠️  Endpoint ${endpoint} returned no data.`);
+            lastError = new Error('No data received from endpoint');
+          } else if (!Array.isArray(data.jobs) && !Array.isArray(data.data)) {
+            console.log(`⚠️  Endpoint ${endpoint} returned data in unexpected format.`);
+            lastError = new Error('Unexpected data format');
           }
         } catch (error) {
           lastError = error;
@@ -123,12 +135,12 @@ class IBMQuantumService {
         }
       }
 
-      if (!data || data.error) {
-        console.warn('⚠️  All IBM Quantum endpoints failed, generating sample data for demo');
+      if (!data || data.error || (!Array.isArray(data.jobs) && !Array.isArray(data.data))) {
+        console.warn('⚠️  All IBM Quantum job endpoints failed or returned invalid data. Generating sample data for demo.');
         return this.generateSampleJobs(limit);
       }
 
-      const jobs = data.jobs || data.data || data || [];
+      const jobs = data.jobs || data.data || [];
 
       if (!Array.isArray(jobs)) {
         console.warn('⚠️  Unexpected data format from IBM Quantum:', typeof jobs);
@@ -140,7 +152,7 @@ class IBMQuantumService {
       return jobs.map((job: any, index: number) => ({
         id: job.id || `ibm_job_${Date.now()}_${index}`,
         name: job.program?.id || job.program_id || job.name || `IBM Job ${job.id?.slice(-8) || index}`,
-        backend: job.backend || job.backend_name || job.device || 'ibm_brisbane',
+        backend: job.backend?.name || job.backend_name || job.device || 'ibm_brisbane', // Use backend.name if available
         status: this.mapStatus(job.status || job.state || 'queued'),
         created: job.created || job.creation_date || new Date().toISOString(),
         updated: job.updated || job.time_per_step?.COMPLETED || job.modified,
@@ -158,39 +170,48 @@ class IBMQuantumService {
   }
 
   async getBackends(): Promise<IBMQuantumBackend[]> {
+    if (!this.apiToken) {
+      console.warn('API token not available. Returning simulated backends.');
+      return this.generateSampleBackends();
+    }
+
     try {
       console.log('🖥️  Fetching backends from IBM Quantum...');
 
       const endpoints = [
         `${this.runtimeUrl}/backends`,
-        `${this.runtimeUrl}/v1/backends`,
-        `https://api.quantum-computing.ibm.com/runtime/backends`,
-        `https://api.quantum-computing.ibm.com/v1/backends`,
-        `https://runtime.quantum-computing.ibm.com/backends`
+        `${this.baseUrl}/backends`,
+        `https://api.quantum.ibm.com/v1/backends`
       ];
 
-      let data = null;
+      let data: any = null;
 
       for (const endpoint of endpoints) {
         try {
           console.log(`🔄 Trying backends endpoint: ${endpoint}`);
           data = await this.makeAuthenticatedRequest(endpoint);
-          if (data && !data.error) {
+          if (data && !data.error && Array.isArray(data.backends)) {
             console.log(`✅ Successfully fetched backends from: ${endpoint}`);
             break;
+          } else if (data && data.error) {
+            console.log(`⚠️  Endpoint ${endpoint} returned an API error:`, data.error);
+          } else if (!data) {
+            console.log(`⚠️  Endpoint ${endpoint} returned no data.`);
+          } else if (!Array.isArray(data.backends)) {
+            console.log(`⚠️  Endpoint ${endpoint} returned data in unexpected format.`);
           }
         } catch (error) {
-          console.log(`❌ Backends endpoint failed: ${endpoint}`);
+          console.log(`❌ Backends endpoint failed: ${endpoint}`, error instanceof Error ? error.message : error);
           continue;
         }
       }
 
-      if (!data || data.error) {
-        console.warn('⚠️  All backend endpoints failed, generating sample backends');
+      if (!data || data.error || !Array.isArray(data.backends)) {
+        console.warn('⚠️  All backend endpoints failed or returned invalid data. Generating sample backends.');
         return this.generateSampleBackends();
       }
 
-      const backends = data.backends || data.data || data || [];
+      const backends = data.backends || [];
 
       if (!Array.isArray(backends)) {
         console.warn('⚠️  Unexpected backends data format:', typeof backends);
@@ -201,8 +222,7 @@ class IBMQuantumService {
 
       return backends.map((backend: any) => ({
         name: backend.name || backend.backend_name || 'unknown_backend',
-        status: backend.status === 'operational' || backend.operational === true || backend.status === 'online' ? 'online' : 
-               backend.status === 'maintenance' ? 'maintenance' : 'offline',
+        status: this.mapBackendStatus(backend.status || backend.operational),
         pending_jobs: backend.pending_jobs || backend.length_queue || backend.queue_length || Math.floor(Math.random() * 10),
         quantum_volume: backend.quantum_volume || backend.props?.quantum_volume,
         num_qubits: backend.n_qubits || backend.num_qubits || backend.configuration?.n_qubits || Math.floor(Math.random() * 100) + 27,
@@ -218,7 +238,7 @@ class IBMQuantumService {
   private generateSampleJobs(count: number): IBMQuantumJob[] {
     console.log(`🔧 Generating ${count} sample IBM Quantum jobs for demo`);
     const backends = ['ibm_brisbane', 'ibm_kyoto', 'ibm_osaka', 'ibm_cairo', 'ibm_sherbrooke'];
-    const statuses: Array<'queued' | 'running' | 'completed' | 'failed'> = ['queued', 'running', 'completed', 'failed'];
+    const statuses: Array<'queued' | 'running' | 'completed' | 'failed' | 'cancelled'> = ['queued', 'running', 'completed', 'failed', 'cancelled'];
 
     return Array.from({ length: count }, (_, i) => {
       const now = new Date();
@@ -245,25 +265,34 @@ class IBMQuantumService {
   private generateSampleBackends(): IBMQuantumBackend[] {
     console.log('🔧 Generating sample IBM Quantum backends for demo');
     return [
-      { name: 'ibm_brisbane', status: 'online' as const, pending_jobs: Math.floor(Math.random() * 5), num_qubits: 127, basis_gates: ['cx', 'id', 'rz', 'sx', 'x'], coupling_map: [] },
-      { name: 'ibm_kyoto', status: 'online' as const, pending_jobs: Math.floor(Math.random() * 8), num_qubits: 127, basis_gates: ['cx', 'id', 'rz', 'sx', 'x'], coupling_map: [] },
-      { name: 'ibm_osaka', status: 'online' as const, pending_jobs: Math.floor(Math.random() * 12), num_qubits: 127, basis_gates: ['cx', 'id', 'rz', 'sx', 'x'], coupling_map: [] },
-      { name: 'ibm_cairo', status: 'maintenance' as const, pending_jobs: 0, num_qubits: 127, basis_gates: ['cx', 'id', 'rz', 'sx', 'x'], coupling_map: [] },
-      { name: 'ibm_sherbrooke', status: 'online' as const, pending_jobs: Math.floor(Math.random() * 15), num_qubits: 133, basis_gates: ['cx', 'id', 'rz', 'sx', 'x'], coupling_map: [] }
+      { name: 'ibm_brisbane', status: 'online', pending_jobs: Math.floor(Math.random() * 5), num_qubits: 127, basis_gates: ['cx', 'id', 'rz', 'sx', 'x'], coupling_map: [] },
+      { name: 'ibm_kyoto', status: 'online', pending_jobs: Math.floor(Math.random() * 8), num_qubits: 127, basis_gates: ['cx', 'id', 'rz', 'sx', 'x'], coupling_map: [] },
+      { name: 'ibm_osaka', status: 'online', pending_jobs: Math.floor(Math.random() * 12), num_qubits: 127, basis_gates: ['cx', 'id', 'rz', 'sx', 'x'], coupling_map: [] },
+      { name: 'ibm_cairo', status: 'maintenance', pending_jobs: 0, num_qubits: 127, basis_gates: ['cx', 'id', 'rz', 'sx', 'x'], coupling_map: [] },
+      { name: 'ibm_sherbrooke', status: 'online', pending_jobs: Math.floor(Math.random() * 15), num_qubits: 133, basis_gates: ['cx', 'id', 'rz', 'sx', 'x'], coupling_map: [] }
     ];
   }
 
   async getJobById(jobId: string): Promise<IBMQuantumJob | null> {
+    if (!this.apiToken) {
+      console.warn('API token not available. Cannot fetch job by ID.');
+      return null;
+    }
     try {
       console.log(`🔍 Fetching job details for: ${jobId}`);
       const job = await this.makeAuthenticatedRequest(
         `${this.runtimeUrl}/jobs/${jobId}`
       );
 
+      if (job.error) {
+        console.warn(`⚠️  Error fetching job ${jobId}:`, job.error);
+        return null;
+      }
+
       return {
         id: job.id,
         name: job.program?.id || 'Quantum Job',
-        backend: job.backend || 'Unknown',
+        backend: job.backend?.name || 'Unknown',
         status: this.mapStatus(job.status),
         created: job.created,
         updated: job.updated,
@@ -288,6 +317,18 @@ class IBMQuantumService {
       case 'failed': case 'error': return 'failed';
       case 'cancelled': case 'canceled': return 'cancelled';
       default: return 'queued';
+    }
+  }
+
+  private mapBackendStatus(ibmStatus: string | boolean | undefined): 'online' | 'offline' | 'maintenance' {
+    if (typeof ibmStatus === 'boolean') {
+      return ibmStatus ? 'online' : 'offline';
+    }
+    switch (ibmStatus?.toLowerCase()) {
+      case 'online': return 'online';
+      case 'maintenance': return 'maintenance';
+      case 'offline': return 'offline';
+      default: return 'offline'; // Default to offline if status is unknown or not provided
     }
   }
 
