@@ -21,7 +21,7 @@ import {
   Legend
 } from "recharts";
 import { useJobStats, useJobTrends, useJobs } from "@/hooks/use-jobs";
-import { TrendingUp, Activity, CheckCircle, XCircle, Clock, Zap, BarChart } from "lucide-react";
+import { TrendingUp, Activity, CheckCircle, XCircle, Clock, Zap, BarChart3 } from "lucide-react";
 
 const COLORS = {
   done: "#10b981",
@@ -308,7 +308,7 @@ export function AnalyticsCharts() {
         <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 hover:shadow-lg transition-shadow">
           <CardHeader className="pb-4">
             <div className="flex items-center space-x-2">
-              <BarChart className="w-5 h-5 text-purple-500" />
+              <BarChart3 className="w-5 h-5 text-purple-500" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Status Overview</h3>
             </div>
           </CardHeader>
