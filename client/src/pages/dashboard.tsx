@@ -42,6 +42,25 @@ const itemVariants = {
   },
 };
 
+// Function to render current view based on 'currentView' state
+const renderCurrentView = (currentView) => {
+  switch (currentView) {
+    case 'overview':
+      return <StatsCards />;
+    case 'jobs':
+      return <JobsTable />;
+    case 'sessions':
+      return <ActiveSessions />;
+    case 'analytics':
+      return <AnalyticsCharts />;
+    case 'backends':
+      return <AllBackendsView />;
+    default:
+      return <StatsCards />;
+  }
+};
+
+
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshInterval, setRefreshInterval] = useState(10);
@@ -52,7 +71,7 @@ export default function Dashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const currentView = searchParams.get('view') || 'dashboard';
+  const currentView = searchParams.get('view') || 'overview'; // Default to 'overview'
 
   // Initialize job notifications
   useJobNotifications();
@@ -93,14 +112,15 @@ export default function Dashboard() {
     });
   }, [updateJobStatus, toast]);
 
-  // Set up auto-refresh
+  // Set up auto-refresh for IBM Quantum API endpoints
   useEffect(() => {
     if (refreshInterval === 0) return;
 
     const interval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics/stats"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/backends"] });
+      queryClient.invalidateQueries({ queryKey: ["https://runtime.quantum-computing.ibm.com/jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["https://runtime.quantum-computing.ibm.com/analytics/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["https://runtime.quantum-computing.ibm.com/backends"] });
+      queryClient.invalidateQueries({ queryKey: ["https://runtime.quantum-computing.ibm.com/sessions"] });
     }, refreshInterval * 1000);
 
     return () => clearInterval(interval);
@@ -115,18 +135,14 @@ export default function Dashboard() {
   }, []);
 
   const handleManualRefresh = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
-    queryClient.invalidateQueries({ queryKey: ["/api/analytics/stats"] });
-    queryClient.invalidateQueries({ queryKey: ["/api/backends"] });
-    queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
+    queryClient.invalidateQueries({ queryKey: ["https://runtime.quantum-computing.ibm.com/jobs"] });
+    queryClient.invalidateQueries({ queryKey: ["https://runtime.quantum-computing.ibm.com/analytics/stats"] });
+    queryClient.invalidateQueries({ queryKey: ["https://runtime.quantum-computing.ibm.com/backends"] });
+    queryClient.invalidateQueries({ queryKey: ["https://runtime.quantum-computing.ibm.com/sessions"] });
   }, []);
 
   const handleViewChange = (view: string) => {
-    if (view === "all-backends") {
-      setSearchParams({ view: 'all-backends' });
-    } else {
-      setSearchParams({});
-    }
+    setSearchParams({ view: view });
   };
 
   const handleOpenSessionForm = () => {
@@ -141,7 +157,7 @@ export default function Dashboard() {
     setShowNotifications(!showNotifications);
   };
 
-  // Conditionally render different views
+  // Conditionally render different views (now handled by renderCurrentView)
   if (currentView === 'all-backends') {
     return (
       <motion.div
@@ -188,7 +204,7 @@ export default function Dashboard() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <motion.div variants={itemVariants}>
-            <AllBackendsView onBack={() => handleViewChange('dashboard')} />
+            <AllBackendsView onBack={() => handleViewChange('overview')} />
           </motion.div>
         </div>
       </motion.div>
@@ -196,127 +212,71 @@ export default function Dashboard() {
   }
 
   return (
-    <motion.div
-      className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {/* Floating background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.1, 1],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-        <motion.div
-          className="absolute top-3/4 right-1/4 w-64 h-64 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1.1, 1, 1.1],
-            rotate: [360, 180, 0],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/20">
       <Header
-        onSearch={handleSearch}
-        onRefreshIntervalChange={handleRefreshIntervalChange}
+        onSearch={setSearchQuery}
+        onRefreshIntervalChange={setRefreshInterval}
         onManualRefresh={handleManualRefresh}
         onViewChange={handleViewChange}
-        onNotificationToggle={handleNotificationToggle}
+        onNotificationToggle={() => setShowNotifications(!showNotifications)}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <motion.div variants={itemVariants}>
-          <StatsCards />
-        </motion.div>
+      <div className="flex">
+        <Sidebar
+          currentView={currentView}
+          onViewChange={handleViewChange}
+        />
 
-        {/* Notification Panel in dashboard */}
-        <AnimatePresence>
-          {showNotifications && (
+        <main className="flex-1 p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
             <motion.div
-              className="fixed inset-0 z-50 flex items-start justify-center pt-20"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-8"
             >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    {currentView === 'overview' && 'Quantum Dashboard Overview'}
+                    {currentView === 'jobs' && 'Quantum Jobs Management'}
+                    {currentView === 'backends' && 'Quantum Backends Status'}
+                    {currentView === 'sessions' && 'Active Sessions'}
+                    {currentView === 'analytics' && 'Analytics & Insights'}
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Real-time monitoring of IBM Quantum Cloud resources
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 rounded-full">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-green-700 dark:text-green-300">Live Data</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <AnimatePresence mode="wait">
               <motion.div
-                className="w-full max-w-2xl mx-4"
-                initial={{ y: -50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -50, opacity: 0 }}
+                key={currentView}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <NotificationPanel 
-                  isOpen={showNotifications} 
-                  onClose={() => setShowNotifications(false)} 
-                />
+                {renderCurrentView(currentView)}
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          {/* Main Content Area */}
-          <div className="xl:col-span-3 space-y-6">
-            <motion.div variants={itemVariants}>
-              <JobsTable searchQuery={searchQuery} />
-            </motion.div>
-
-            <motion.div variants={itemVariants}>
-              <TimelineView />
-            </motion.div>
-
-            <motion.div variants={itemVariants}>
-              <AnalyticsCharts />
-            </motion.div>
+            </AnimatePresence>
           </div>
-
-          {/* Sidebar */}
-          <motion.div variants={itemVariants}>
-            <Sidebar onViewChange={handleViewChange} onOpenSessionForm={handleOpenSessionForm} />
-          </motion.div>
-        </div>
+        </main>
       </div>
 
-      {/* Session Form Modal */}
-      <AnimatePresence>
-        {showSessionForm && (
-          <SessionForm onClose={handleCloseSessionForm} />
-        )}
-      </AnimatePresence>
-
-      {/* Floating Refresh Button */}
-      <motion.div
-        className="fixed bottom-6 right-6 z-40"
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ delay: 1, duration: 0.5 }}
-      >
-        <Button
-          onClick={handleManualRefresh}
-          className="w-16 h-16 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 hover:from-blue-700 hover:via-purple-700 hover:to-blue-700 text-white rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-110 transition-all duration-300 backdrop-blur-sm border-2 border-white/20"
-          data-testid="button-floating-refresh"
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-          >
-            <RefreshCw className="w-7 h-7" />
-          </motion.div>
-        </Button>
-      </motion.div>
-    </motion.div>
+      {showNotifications && (
+        <NotificationPanel
+          onClose={() => setShowNotifications(false)}
+        />
+      )}
+    </div>
   );
 }
