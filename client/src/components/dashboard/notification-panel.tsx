@@ -102,7 +102,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
 
       {/* Panel */}
       <motion.div
-        className="relative w-full max-h-[80vh] bg-white dark:bg-gray-800 shadow-2xl z-50 overflow-hidden border-4 border-blue-500 rounded-lg"
+        className="fixed top-16 right-4 w-96 max-h-[80vh] bg-white dark:bg-gray-800 shadow-2xl z-50 overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg"
         variants={panelVariants}
         initial="hidden"
         animate="visible"

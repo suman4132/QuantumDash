@@ -354,11 +354,14 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {showNotifications && (
-        <NotificationPanel
-          onClose={() => setShowNotifications(false)}
-        />
-      )}
+      <AnimatePresence>
+        {showNotifications && (
+          <NotificationPanel
+            isOpen={showNotifications}
+            onClose={() => setShowNotifications(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
