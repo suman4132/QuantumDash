@@ -253,7 +253,7 @@ export default function Landing() {
       {/* Enhanced Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <motion.div 
-          className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-purple-900/25 to-pink-900/20"
+          className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-pink-900/20"
           style={{ y: backgroundY }}
           animate={{
             background: [
@@ -268,7 +268,7 @@ export default function Landing() {
             ease: "easeInOut"
           }}
         />
-        
+
         {/* Dynamic grid pattern */}
         <div className="absolute inset-0 opacity-30">
           <motion.div 
@@ -321,7 +321,7 @@ export default function Landing() {
             ease: "linear"
           }}
         />
-        
+
         <motion.div
           className="absolute top-40 right-20 w-24 h-24 border-2 border-purple-400/30"
           animate={{
@@ -588,7 +588,7 @@ export default function Landing() {
                     </motion.div>
                   </span>
                 </Button>
-                
+
                 {/* Particle effect around button */}
                 <div className="absolute inset-0 pointer-events-none">
                   {Array.from({ length: 8 }).map((_, i) => (
@@ -615,7 +615,7 @@ export default function Landing() {
                   ))}
                 </div>
               </motion.div>
-              
+
               <motion.div
                 whileHover={{ 
                   scale: 1.05,
@@ -692,7 +692,7 @@ export default function Landing() {
                     className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100"
                     transition={{ duration: 0.5 }}
                   />
-                  
+
                   {/* Animated border effect */}
                   <motion.div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100"
@@ -707,7 +707,7 @@ export default function Landing() {
                     transition={{ duration: 2, repeat: Infinity }}
                     style={{ padding: '1px', borderRadius: '0.5rem' }}
                   />
-                  
+
                   <CardContent className="p-6 text-center relative z-10 h-full flex flex-col">
                     <motion.div 
                       className="mb-4 group-hover:scale-125 transition-all duration-500"
@@ -734,7 +734,7 @@ export default function Landing() {
                         {feature.icon}
                       </motion.div>
                     </motion.div>
-                    
+
                     <motion.h3 
                       className="text-xl font-semibold mb-2"
                       whileHover={{ 
@@ -744,14 +744,14 @@ export default function Landing() {
                     >
                       {feature.title}
                     </motion.h3>
-                    
+
                     <motion.p 
                       className="text-gray-400 group-hover:text-gray-300 transition-colors duration-300 flex-grow"
                       whileHover={{ scale: 1.02 }}
                     >
                       {feature.description}
                     </motion.p>
-                    
+
                     {/* Floating particles on hover */}
                     <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                       {Array.from({ length: 6 }).map((_, i) => (
