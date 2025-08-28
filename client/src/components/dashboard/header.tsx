@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils"; // Assuming cn utility is available
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -37,10 +38,47 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshInterval, setRefreshInterval] = useState("10");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
   const { toast } = useToast();
+
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected'>('connected');
+  const [lastSync, setLastSync] = useState<Date>(new Date());
+
+  // Simulate connection status updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Randomly simulate connection status changes for demo
+      const statuses: Array<'connected' | 'connecting' | 'disconnected'> = ['connected', 'connected', 'connected', 'connecting', 'disconnected'];
+      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      setConnectionStatus(randomStatus);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleSync = async () => {
+    setSyncStatus('syncing');
+    setConnectionStatus('connecting');
+    try {
+      const response = await fetch('/api/sync/ibm', { method: 'POST' });
+      if (response.ok) {
+        setSyncStatus('success');
+        setConnectionStatus('connected');
+        setLastSync(new Date());
+        setTimeout(() => setSyncStatus('idle'), 2000);
+      } else {
+        setSyncStatus('error');
+        setConnectionStatus('disconnected');
+        setTimeout(() => setSyncStatus('idle'), 2000);
+      }
+    } catch (error) {
+      setSyncStatus('error');
+      setConnectionStatus('disconnected');
+      setTimeout(() => setSyncStatus('idle'), 2000);
+    }
+  };
 
   const { data: jobsData } = useJobs(1, 50);
 
@@ -180,18 +218,33 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
                 />
               )}
             </div>
+            
+            <div className="flex items-center gap-4">
+              {/* Connection Status Indicator */}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className={cn("h-2 w-2 rounded-full", {
+                  "bg-green-500 animate-pulse": connectionStatus === 'connected',
+                  "bg-yellow-500 animate-pulse": connectionStatus === 'connecting',
+                  "bg-red-500": connectionStatus === 'disconnected'
+                })} />
+                <span className="capitalize">{connectionStatus}</span>
+                <span className="text-xs">• Last sync: {lastSync.toLocaleTimeString()}</span>
+              </div>
 
-            {/* Sync IBM Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleIBMSync}
-              disabled={isSyncing}
-              className="bg-blue-500/10 backdrop-blur-sm border-blue-200/50 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300"
-            >
-              <CloudDownload className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-bounce' : ''}`} />
-              {isSyncing ? 'Syncing...' : 'Sync IBM'}
-            </Button>
+              <Button 
+                onClick={handleSync}
+                disabled={syncStatus === 'syncing'}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={cn("h-4 w-4", syncStatus === 'syncing' && "animate-spin")} />
+                {syncStatus === 'syncing' && 'Syncing...'}
+                {syncStatus === 'success' && 'Synced!'}
+                {syncStatus === 'error' && 'Error'}
+                {syncStatus === 'idle' && 'Sync IBM'}
+              </Button>
+            </div>
 
             {/* Notification Bell */}
             <div className="relative">

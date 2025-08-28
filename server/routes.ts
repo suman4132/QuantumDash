@@ -3,9 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertJobSchema, insertSessionSchema, JobStatus } from "@shared/schema";
 import { z } from "zod";
-import { IBMQuantumService } from "./ibmQuantumService"; // Assuming this service is in a separate file
-
-const ibmQuantumService = new IBMQuantumService(); // Initialize the service
+import { ibmQuantumService } from "./ibm-quantum";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Jobs endpoints
