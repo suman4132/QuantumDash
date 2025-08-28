@@ -49,7 +49,7 @@ const itemVariants = {
 const renderCurrentView = (currentView) => {
   switch (currentView) {
     case 'overview':
-      return <StatsCards />;
+      return null; // Overview content is handled separately below
     case 'jobs':
       return <JobsTable />;
     case 'sessions':
@@ -59,7 +59,7 @@ const renderCurrentView = (currentView) => {
     case 'backends':
       return <AllBackendsView />;
     default:
-      return <StatsCards />;
+      return null;
   }
 };
 
@@ -268,6 +268,7 @@ export default function Dashboard() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
+                {/* Only show StatsCards once at the top for all views */}
                 <div className="mb-6">
                   <StatsCards />
                 </div>
