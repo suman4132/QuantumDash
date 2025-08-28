@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { RefreshCw, CheckCircle, XCircle, Clock, Play } from "lucide-react";
+import { RefreshCw, CheckCircle, XCircle, Clock, Play, Activity, Search, Bell, Plus, Settings, Menu, X, Users, BarChart3, Zap } from "lucide-react";
 import { Header } from "@/components/dashboard/header";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { JobsTable } from "@/components/dashboard/jobs-table";
@@ -21,6 +21,9 @@ import { NotificationPanel } from "@/components/dashboard/notification-panel";
 import { AnimatePresence } from "framer-motion";
 import { useJobNotifications } from "@/hooks/use-job-notifications";
 import { useTheme } from "@/hooks/use-theme";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { JobStatusDistribution } from "@/components/dashboard/job-status-distribution";
+import { LiveActivityFeed } from "@/components/dashboard/live-activity-feed";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -265,6 +268,38 @@ export default function Dashboard() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
+                <div className="mb-6">
+                  <StatsCards />
+                </div>
+
+                {/* Comprehensive Status Overview */}
+                {currentView === 'overview' && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
+                      <CardHeader>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                          <Activity className="w-5 h-5 mr-2 text-blue-500" />
+                          Job Status Distribution
+                        </h3>
+                      </CardHeader>
+                      <CardContent>
+                        <JobStatusDistribution />
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50">
+                      <CardHeader>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                          <Zap className="w-5 h-5 mr-2 text-green-500" />
+                          Live Activity
+                        </h3>
+                      </CardHeader>
+                      <CardContent>
+                        <LiveActivityFeed />
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
                 {renderCurrentView(currentView)}
               </motion.div>
             </AnimatePresence>

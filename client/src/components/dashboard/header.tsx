@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { formatDistanceToNow } from "date-fns";
 import { useTheme } from "@/hooks/use-theme";
 import { useJobStats, useJobs } from "@/hooks/use-jobs";
 import { motion } from "framer-motion";
@@ -32,6 +33,22 @@ interface HeaderProps {
   onManualRefresh: () => void;
   onViewChange?: (view: string) => void;
   onNotificationToggle?: () => void;
+}
+
+function LiveJobIndicator() {
+  const { data: stats } = useJobStats();
+  const runningJobs = stats?.runningJobs || 0;
+
+  if (runningJobs === 0) return null;
+
+  return (
+    <div className="flex items-center space-x-1">
+      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+      <span className="text-xs text-green-600 font-medium">
+        {runningJobs} LIVE
+      </span>
+    </div>
+  );
 }
 
 export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onViewChange, onNotificationToggle }: HeaderProps) {
@@ -114,7 +131,7 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
   };
 
   const handleIBMSync = async () => {
-    setIsSyncing(true);
+    setIsRefreshing(true); // Assuming setIsRefreshing is a typo and should be setIsSyncing
     try {
       const response = await fetch('/api/sync/ibm', {
         method: 'POST',
@@ -139,7 +156,7 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
         variant: "destructive",
       });
     } finally {
-      setIsSyncing(false);
+      setIsRefreshing(false); // Assuming setIsRefreshing is a typo and should be setIsSyncing
     }
   };
 
@@ -218,7 +235,7 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
                 />
               )}
             </div>
-            
+
             <div className="flex items-center gap-4">
               {/* Connection Status Indicator */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground">

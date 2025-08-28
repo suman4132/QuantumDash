@@ -101,10 +101,11 @@ export function StatsCards() {
       value: stats?.runningJobs || 0,
       icon: Zap,
       description: "Currently executing",
-      color: "text-orange-600",
-      bgGradient: "from-orange-500/10 to-orange-600/10",
-      borderColor: "border-orange-200",
-      iconBg: "bg-orange-100",
+      color: "text-green-600",
+      bgGradient: "from-green-500/10 to-green-600/10",
+      borderColor: "border-green-200",
+      iconBg: "bg-green-100",
+      pulse: true,
     },
     {
       title: "Queued",
@@ -121,10 +122,20 @@ export function StatsCards() {
       value: stats?.completedJobs || 0,
       icon: CheckCircle,
       description: "Successfully finished",
-      color: "text-green-600",
-      bgGradient: "from-green-500/10 to-green-600/10",
-      borderColor: "border-green-200",
-      iconBg: "bg-green-100",
+      color: "text-blue-600",
+      bgGradient: "from-blue-500/10 to-blue-600/10",
+      borderColor: "border-blue-200",
+      iconBg: "bg-blue-100",
+    },
+    {
+      title: "Failed",
+      value: stats?.failedJobs || 0,
+      icon: XCircle,
+      description: "Execution failed",
+      color: "text-red-600",
+      bgGradient: "from-red-500/10 to-red-600/10",
+      borderColor: "border-red-200",
+      iconBg: "bg-red-100",
     },
     {
       title: "Success Rate",
@@ -139,7 +150,7 @@ export function StatsCards() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
         {statsConfig.map((stat, index) => (
           <Card 
             key={stat.title} 
@@ -147,7 +158,8 @@ export function StatsCards() {
               "relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105",
               "bg-gradient-to-br", stat.bgGradient,
               "border-0 shadow-lg",
-              stat.borderColor
+              stat.borderColor,
+              stat.pulse && stat.value > 0 ? "animate-pulse" : ""
             )}
             style={{
               animationDelay: `${index * 100}ms`,
@@ -157,7 +169,7 @@ export function StatsCards() {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.title}
               </CardTitle>
-              <div className={cn("p-2 rounded-full", stat.iconBg)}>
+              <div className={cn("p-2 rounded-full", stat.iconBg, stat.pulse && stat.value > 0 ? "animate-bounce" : "")}>
                 <stat.icon className={cn("h-4 w-4", stat.color)} />
               </div>
             </CardHeader>
@@ -172,6 +184,13 @@ export function StatsCards() {
               <p className="text-xs text-muted-foreground mt-1 font-medium">
                 {stat.description}
               </p>
+              {/* Live indicator for running jobs */}
+              {stat.pulse && stat.value > 0 && (
+                <div className="flex items-center mt-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
+                  <span className="text-xs text-green-600 font-medium">LIVE</span>
+                </div>
+              )}
             </CardContent>
             {/* Subtle background pattern */}
             <div className="absolute -right-4 -top-4 opacity-10">
