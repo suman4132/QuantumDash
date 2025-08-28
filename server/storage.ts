@@ -1,5 +1,6 @@
 import { type Job, type InsertJob, type Session, type InsertSession, type Backend, type InsertBackend, JobStatus, SessionStatus, BackendStatus } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { ibmQuantumService } from "./ibm-quantum";
 
 export interface IStorage {
   // Jobs
@@ -41,13 +42,102 @@ export class MemStorage implements IStorage {
   private sessions: Map<string, Session>;
   private backends: Map<string, Backend>;
   private simulationInterval: NodeJS.Timeout | null = null;
+  private lastIBMSync = 0;
+  private readonly IBM_SYNC_INTERVAL = 30000; // 30 seconds
 
   constructor() {
     this.jobs = new Map();
     this.sessions = new Map();
     this.backends = new Map();
     this.initializeData();
-    this.startJobSimulation();
+    this.initializeSampleJobs();
+
+    // Start simulation timer for demo data
+    setInterval(() => {
+      this.simulateJobStatusChanges();
+    }, 5000);
+
+    // Sync with IBM Quantum every 30 seconds if configured
+    if (ibmQuantumService.isConfigured()) {
+      setInterval(() => {
+        this.syncWithIBMQuantum();
+      }, this.IBM_SYNC_INTERVAL);
+    }
+  }
+
+  private async syncWithIBMQuantum() {
+    try {
+      const now = Date.now();
+      if (now - this.lastIBMSync < this.IBM_SYNC_INTERVAL) {
+        return;
+      }
+
+      console.log('Syncing with IBM Quantum...');
+
+      // Fetch real jobs from IBM Quantum
+      const ibmJobs = await ibmQuantumService.getJobs(50);
+
+      // Convert IBM jobs to our format
+      for (const ibmJob of ibmJobs) {
+        const job: Job = {
+          id: `ibm_${ibmJob.id}`,
+          name: ibmJob.name || 'IBM Quantum Job',
+          backend: ibmJob.backend,
+          status: this.mapIBMStatus(ibmJob.status),
+          queuePosition: ibmJob.status === 'queued' ? Math.floor(Math.random() * 10) + 1 : null,
+          submissionTime: new Date(ibmJob.created),
+          startTime: ibmJob.status === 'running' || ibmJob.status === 'completed' ?
+                    new Date(ibmJob.created) : null,
+          endTime: ibmJob.status === 'completed' || ibmJob.status === 'failed' ?
+                  new Date(ibmJob.updated || ibmJob.created) : null,
+          duration: ibmJob.runtime || null,
+          qubits: ibmJob.qubits || 5,
+          shots: ibmJob.shots || 1024,
+          program: `// IBM Quantum Job\n${ibmJob.program || 'quantum_circuit'}`,
+          results: ibmJob.results || null,
+          error: ibmJob.error || null,
+          tags: ['ibm', 'real'],
+          sessionId: 'ibm_session_1',
+        };
+
+        this.jobs.set(job.id, job);
+      }
+
+      // Fetch real backends from IBM Quantum
+      const ibmBackends = await ibmQuantumService.getBackends();
+
+      for (const ibmBackend of ibmBackends) {
+        const backend: Backend = {
+          id: `ibm_${ibmBackend.name}`,
+          name: ibmBackend.name,
+          status: ibmBackend.status === 'online' ? 'available' :
+                 ibmBackend.status === 'maintenance' ? 'maintenance' : 'busy',
+          qubits: ibmBackend.num_qubits,
+          queueLength: ibmBackend.pending_jobs,
+          averageWaitTime: ibmBackend.pending_jobs * 45, // Estimate
+          uptime: ibmBackend.status === 'online' ? '99.5%' : '0%',
+        };
+
+        this.backends.set(backend.id, backend);
+      }
+
+      this.lastIBMSync = now;
+      console.log(`Synced ${ibmJobs.length} jobs and ${ibmBackends.length} backends from IBM Quantum`);
+
+    } catch (error) {
+      console.error('Failed to sync with IBM Quantum:', error);
+    }
+  }
+
+  private mapIBMStatus(ibmStatus: string): JobStatus {
+    switch (ibmStatus) {
+      case 'queued': return 'queued';
+      case 'running': return 'running';
+      case 'completed': return 'done';
+      case 'failed': return 'failed';
+      case 'cancelled': return 'cancelled';
+      default: return 'queued';
+    }
   }
 
   private startJobSimulation() {

@@ -173,6 +173,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // IBM Quantum sync endpoint
+  app.post("/api/sync/ibm", async (req, res) => {
+    try {
+      // Force sync with IBM Quantum
+      await (storage as any).syncWithIBMQuantum();
+      res.json({ success: true, message: "Synced with IBM Quantum successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to sync with IBM Quantum" });
+    }
+  });
+
   // Export endpoints
   app.get("/api/export/csv", async (req, res) => {
     try {

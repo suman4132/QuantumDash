@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Moon, Sun, Search, RefreshCw, Bell } from "lucide-react";
+import { Moon, Sun, Search, RefreshCw, Bell, CloudDownload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,6 +23,7 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -36,8 +37,10 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshInterval, setRefreshInterval] = useState("10");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
+  const { toast } = useToast();
 
   const { data: jobsData } = useJobs(1, 50);
 
@@ -70,6 +73,36 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
   const handleRefreshIntervalChange = (value: string) => {
     setRefreshInterval(value);
     onRefreshIntervalChange(parseInt(value));
+  };
+
+  const handleIBMSync = async () => {
+    setIsSyncing(true);
+    try {
+      const response = await fetch('/api/sync/ibm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        onManualRefresh(); // Refresh the data after sync
+        toast({
+          title: "IBM Quantum Sync",
+          description: "Successfully synced with IBM Quantum Cloud",
+        });
+      } else {
+        throw new Error('Sync failed');
+      }
+    } catch (error) {
+      toast({
+        title: "Sync Error",
+        description: "Failed to sync with IBM Quantum Cloud",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   return (
@@ -148,7 +181,17 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
               )}
             </div>
 
-
+            {/* Sync IBM Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleIBMSync}
+              disabled={isSyncing}
+              className="bg-blue-500/10 backdrop-blur-sm border-blue-200/50 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300"
+            >
+              <CloudDownload className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-bounce' : ''}`} />
+              {isSyncing ? 'Syncing...' : 'Sync IBM'}
+            </Button>
 
             {/* Notification Bell */}
             <div className="relative">
