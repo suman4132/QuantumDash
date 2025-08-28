@@ -315,6 +315,19 @@ export default function Dashboard() {
                     </Card>
                   </div>
                 )}
+                {currentView === 'analytics' && (
+                  <div className="space-y-6">
+                    <div className="text-center mb-8">
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        Analytics Dashboard
+                      </h2>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Comprehensive insights into your quantum job performance
+                      </p>
+                    </div>
+                    <AnalyticsCharts />
+                  </div>
+                )}
                 {renderCurrentView(currentView)}
               </motion.div>
             </AnimatePresence>
