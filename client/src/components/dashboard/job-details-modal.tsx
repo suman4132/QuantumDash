@@ -1,11 +1,12 @@
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, Clock, Server, Hash, Tag, CheckCircle, XCircle, Play, Pause, Cpu, Zap, Code, BarChart3, Target, Activity, Database, Settings } from "lucide-react";
+import { X, Calendar, Clock, Server, Hash, Tag, CheckCircle, XCircle, Play, Pause, Cpu, Zap, Code, BarChart3, Target, Activity, Database, Settings, TrendingUp, GitBranch } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area, ScatterChart, Scatter } from "recharts";
 import type { Job, JobStatus } from "@shared/schema";
 import { format, formatDistanceToNow } from "date-fns";
 
@@ -36,6 +37,70 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
     const minutes = Math.floor(duration / 60);
     const seconds = duration % 60;
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  // Generate sample data for visualizations
+  const generateErrorData = () => {
+    return [
+      { name: 'T1 (μs)', value: 311.79, min: 85.2, max: 523.4, type: 'coherence' },
+      { name: 'T2 (μs)', value: 353.48, min: 127.8, max: 489.3, type: 'coherence' },
+      { name: 'Readout Error', value: 4.7e-3, min: 1.343e-3, max: 1.936e-1, type: 'error' },
+      { name: 'CZ Error', value: 1.681e-3, min: 6.943e-4, max: 1.99e-1, type: 'error' },
+      { name: 'SX Error', value: 1.832e-4, min: 4.2e-5, max: 8.9e-4, type: 'error' }
+    ];
+  };
+
+  const generateQueueData = () => {
+    const data = [];
+    const now = Date.now();
+    for (let i = 0; i < 24; i++) {
+      data.push({
+        time: format(new Date(now - (24 - i) * 3600000), 'HH:mm'),
+        position: Math.max(1, Math.floor(Math.random() * 50) - i * 2),
+        estimatedWait: Math.max(5, 120 - i * 4)
+      });
+    }
+    return data;
+  };
+
+  const generateTopologyData = () => {
+    const nodes = [];
+    const connections = [];
+    const qubits = job.qubits || 27;
+    
+    // Generate qubit nodes in a grid-like pattern
+    for (let i = 0; i < qubits; i++) {
+      const row = Math.floor(i / Math.ceil(Math.sqrt(qubits)));
+      const col = i % Math.ceil(Math.sqrt(qubits));
+      nodes.push({
+        id: i,
+        x: col * 60 + 30,
+        y: row * 60 + 30,
+        error: Math.random() * 0.01,
+        connected: i < qubits - 1
+      });
+      
+      // Add connections to adjacent qubits
+      if (col < Math.ceil(Math.sqrt(qubits)) - 1) {
+        connections.push({ from: i, to: i + 1, error: Math.random() * 0.005 });
+      }
+      if (row < Math.floor(qubits / Math.ceil(Math.sqrt(qubits)))) {
+        connections.push({ from: i, to: i + Math.ceil(Math.sqrt(qubits)), error: Math.random() * 0.005 });
+      }
+    }
+    
+    return { nodes, connections };
+  };
+
+  const errorData = generateErrorData();
+  const queueData = generateQueueData();
+  const topologyData = generateTopologyData();
+
+  const formatScientific = (value: number) => {
+    if (value < 0.001) {
+      return value.toExponential(2);
+    }
+    return value.toFixed(3);
   };
 
   const modalVariants = {
@@ -232,7 +297,7 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                 </TabsContent>
 
                 <TabsContent value="circuit" className="px-6 pb-6 space-y-6">
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <h4 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
                       <Code className="w-4 h-4" />
                       Quantum Circuit Details
@@ -271,6 +336,86 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                       </div>
                     </div>
 
+                    {/* Quantum Processor Topology */}
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h5 className="font-medium flex items-center gap-2">
+                          <GitBranch className="w-4 h-4" />
+                          Processor Topology
+                        </h5>
+                        <div className="flex gap-2">
+                          <Badge variant="outline" className="text-xs">Map View</Badge>
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-gray-900/50 border rounded-lg p-4">
+                        <div className="relative w-full h-96 flex items-center justify-center">
+                          <svg width="100%" height="100%" viewBox="0 0 400 300" className="border rounded">
+                            {/* Draw connections first (behind nodes) */}
+                            {topologyData.connections.map((conn, i) => {
+                              const fromNode = topologyData.nodes[conn.from];
+                              const toNode = topologyData.nodes[conn.to];
+                              if (!fromNode || !toNode) return null;
+                              
+                              const opacity = 1 - conn.error * 100; // Higher error = more transparent
+                              return (
+                                <line
+                                  key={`conn-${i}`}
+                                  x1={fromNode.x}
+                                  y1={fromNode.y}
+                                  x2={toNode.x}
+                                  y2={toNode.y}
+                                  stroke={conn.error > 0.003 ? '#ef4444' : '#10b981'}
+                                  strokeWidth="2"
+                                  opacity={Math.max(0.3, opacity)}
+                                />
+                              );
+                            })}
+                            
+                            {/* Draw qubit nodes */}
+                            {topologyData.nodes.map((node) => {
+                              const color = node.error > 0.005 ? '#ef4444' : node.error > 0.002 ? '#f59e0b' : '#10b981';
+                              return (
+                                <g key={`node-${node.id}`}>
+                                  <circle
+                                    cx={node.x}
+                                    cy={node.y}
+                                    r="12"
+                                    fill={color}
+                                    stroke="#374151"
+                                    strokeWidth="1"
+                                  />
+                                  <text
+                                    x={node.x}
+                                    y={node.y + 4}
+                                    textAnchor="middle"
+                                    fontSize="10"
+                                    fill="white"
+                                    fontWeight="bold"
+                                  >
+                                    {node.id}
+                                  </text>
+                                </g>
+                              );
+                            })}
+                          </svg>
+                        </div>
+                        <div className="flex items-center gap-4 mt-2 text-xs">
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span>Good (&lt; 0.002)</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <span>Fair (0.002-0.005)</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                            <span>Poor (&gt; 0.005)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Circuit Program */}
                     {job.program && (
                       <div>
@@ -298,7 +443,7 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                 </TabsContent>
 
                 <TabsContent value="execution" className="px-6 pb-6 space-y-6">
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <h4 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
                       <Cpu className="w-4 h-4" />
                       Backend & Execution Details
@@ -350,6 +495,54 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                         </div>
                       </div>
                     </div>
+
+                    {/* Queue Timeline Chart */}
+                    {job.status === 'queued' && (
+                      <div>
+                        <h5 className="font-medium mb-4 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4" />
+                          Queue Position Timeline (24h)
+                        </h5>
+                        <div className="bg-gray-50 dark:bg-gray-900/50 border rounded-lg p-4">
+                          <ResponsiveContainer width="100%" height={200}>
+                            <AreaChart data={queueData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="time" fontSize={12} />
+                              <YAxis fontSize={12} />
+                              <Tooltip 
+                                formatter={(value, name) => [
+                                  name === 'position' ? `#${value}` : `${value} min`,
+                                  name === 'position' ? 'Queue Position' : 'Est. Wait Time'
+                                ]}
+                              />
+                              <Area 
+                                type="monotone" 
+                                dataKey="position" 
+                                stroke="#3b82f6" 
+                                fill="#3b82f6" 
+                                fillOpacity={0.3}
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Performance Metrics Chart */}
+                    <div>
+                      <h5 className="font-medium mb-4">Backend Performance Metrics</h5>
+                      <div className="bg-gray-50 dark:bg-gray-900/50 border rounded-lg p-4">
+                        <ResponsiveContainer width="100%" height={250}>
+                          <BarChart data={errorData.filter(d => d.type === 'error')}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" fontSize={12} angle={-45} textAnchor="end" height={80} />
+                            <YAxis fontSize={12} tickFormatter={formatScientific} />
+                            <Tooltip formatter={(value) => [formatScientific(Number(value)), 'Error Rate']} />
+                            <Bar dataKey="value" fill="#ef4444" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
                   </div>
                 </TabsContent>
 
@@ -392,13 +585,80 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                 </TabsContent>
 
                 <TabsContent value="calibration" className="px-6 pb-6 space-y-6">
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <h4 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
                       <Settings className="w-4 h-4" />
-                      System Information
+                      System Calibration & Performance
                     </h4>
                     
-                    {/* Error Rates */}
+                    {/* Coherence Times Chart */}
+                    <div>
+                      <h5 className="font-medium mb-4">Coherence Times Distribution</h5>
+                      <div className="bg-gray-50 dark:bg-gray-900/50 border rounded-lg p-4">
+                        <ResponsiveContainer width="100%" height={250}>
+                          <BarChart data={errorData.filter(d => d.type === 'coherence')}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" fontSize={12} />
+                            <YAxis fontSize={12} />
+                            <Tooltip formatter={(value) => [`${value} μs`, 'Coherence Time']} />
+                            <Bar dataKey="value" fill="#10b981">
+                              <Bar dataKey="min" fill="#dc2626" />
+                              <Bar dataKey="max" fill="#3b82f6" />
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="flex items-center gap-6 mt-2 text-xs">
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 bg-green-500"></div>
+                          <span>Median</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 bg-red-600"></div>
+                          <span>Minimum</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 bg-blue-600"></div>
+                          <span>Maximum</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Error Rate Scatter Plot */}
+                    <div>
+                      <h5 className="font-medium mb-4">Error Rate Analysis</h5>
+                      <div className="bg-gray-50 dark:bg-gray-900/50 border rounded-lg p-4">
+                        <ResponsiveContainer width="100%" height={250}>
+                          <ScatterChart data={[
+                            { x: 1.68e-3, y: 1.83e-4, name: 'CZ vs SX Error' },
+                            { x: 4.7e-3, y: 1.343e-3, name: 'Readout vs Min' },
+                            { x: 6.94e-4, y: 1.99e-1, name: 'Best vs Max' }
+                          ]}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              type="number" 
+                              dataKey="x" 
+                              fontSize={12}
+                              tickFormatter={formatScientific}
+                              name="Error Rate A"
+                            />
+                            <YAxis 
+                              type="number" 
+                              dataKey="y" 
+                              fontSize={12}
+                              tickFormatter={formatScientific}
+                              name="Error Rate B"
+                            />
+                            <Tooltip 
+                              formatter={(value, name) => [formatScientific(Number(value)), name]}
+                            />
+                            <Scatter dataKey="y" fill="#8884d8" />
+                          </ScatterChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Detailed Error Rates Table */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <h5 className="font-medium text-gray-700 dark:text-gray-300">Error Rates</h5>
@@ -439,7 +699,7 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm font-medium">Last Calibrated:</span>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">2 hours ago</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">31 minutes ago</span>
                           </div>
                         </div>
                       </div>
