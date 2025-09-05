@@ -1,4 +1,9 @@
-import { type Job, type InsertJob, type Session, type InsertSession, type Backend, type InsertBackend, JobStatus, SessionStatus, BackendStatus } from "@shared/schema";
+import { 
+  type Job, type InsertJob, type Session, type InsertSession, type Backend, type InsertBackend, 
+  type Workspace, type InsertWorkspace, type WorkspaceMember, type InsertWorkspaceMember,
+  type Project, type InsertProject, type ProjectCollaborator, type InsertProjectCollaborator,
+  JobStatus, SessionStatus, BackendStatus, WorkspaceStatus, ProjectStatus
+} from "@shared/schema";
 import { randomUUID } from "crypto";
 import { ibmQuantumService } from "./ibm-quantum";
 
@@ -35,12 +40,45 @@ export interface IStorage {
     failedJobs: number;
     successRate: number;
   }>;
+
+  // Workspaces
+  getWorkspaces(): Promise<Workspace[]>;
+  getWorkspaceById(id: string): Promise<Workspace | undefined>;
+  createWorkspace(workspace: InsertWorkspace): Promise<Workspace>;
+  updateWorkspace(id: string, updates: Partial<Workspace>): Promise<Workspace | undefined>;
+  deleteWorkspace(id: string): Promise<boolean>;
+  searchWorkspaces(query: string): Promise<Workspace[]>;
+
+  // Workspace Members
+  getWorkspaceMembers(workspaceId: string): Promise<WorkspaceMember[]>;
+  addWorkspaceMember(member: InsertWorkspaceMember): Promise<WorkspaceMember>;
+  updateWorkspaceMember(id: string, updates: Partial<WorkspaceMember>): Promise<WorkspaceMember | undefined>;
+  removeWorkspaceMember(id: string): Promise<boolean>;
+
+  // Projects
+  getProjects(): Promise<Project[]>;
+  getProjectById(id: string): Promise<Project | undefined>;
+  getProjectsByWorkspace(workspaceId: string): Promise<Project[]>;
+  createProject(project: InsertProject): Promise<Project>;
+  updateProject(id: string, updates: Partial<Project>): Promise<Project | undefined>;
+  deleteProject(id: string): Promise<boolean>;
+  searchProjects(query: string): Promise<Project[]>;
+
+  // Project Collaborators
+  getProjectCollaborators(projectId: string): Promise<ProjectCollaborator[]>;
+  addProjectCollaborator(collaborator: InsertProjectCollaborator): Promise<ProjectCollaborator>;
+  updateProjectCollaborator(id: string, updates: Partial<ProjectCollaborator>): Promise<ProjectCollaborator | undefined>;
+  removeProjectCollaborator(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private jobs: Map<string, Job>;
   private sessions: Map<string, Session>;
   private backends: Map<string, Backend>;
+  private workspaces: Map<string, Workspace>;
+  private workspaceMembers: Map<string, WorkspaceMember>;
+  private projects: Map<string, Project>;
+  private projectCollaborators: Map<string, ProjectCollaborator>;
   private simulationInterval: NodeJS.Timeout | null = null;
   private lastIBMSync = 0;
   private readonly IBM_SYNC_INTERVAL = 30000; // 30 seconds
@@ -49,6 +87,10 @@ export class MemStorage implements IStorage {
     this.jobs = new Map();
     this.sessions = new Map();
     this.backends = new Map();
+    this.workspaces = new Map();
+    this.workspaceMembers = new Map();
+    this.projects = new Map();
+    this.projectCollaborators = new Map();
     this.initializeData();
     this.initializeSampleJobs();
 
@@ -116,6 +158,7 @@ export class MemStorage implements IStorage {
           queueLength: ibmBackend.pending_jobs,
           averageWaitTime: ibmBackend.pending_jobs * 45, // Estimate
           uptime: ibmBackend.status === 'online' ? '99.5%' : '0%',
+          lastUpdate: new Date(),
         };
 
         this.backends.set(backend.id, backend);
@@ -616,6 +659,223 @@ export class MemStorage implements IStorage {
       failedJobs,
       successRate: Math.round(successRate * 10) / 10,
     };
+  }
+
+  // Workspace methods
+  async getWorkspaces(): Promise<Workspace[]> {
+    return Array.from(this.workspaces.values())
+      .sort((a, b) => new Date(b.lastActivity || 0).getTime() - new Date(a.lastActivity || 0).getTime());
+  }
+
+  async getWorkspaceById(id: string): Promise<Workspace | undefined> {
+    return this.workspaces.get(id);
+  }
+
+  async createWorkspace(insertWorkspace: InsertWorkspace): Promise<Workspace> {
+    const id = `ws_${randomUUID().slice(0, 8)}`;
+    const workspace: Workspace = {
+      id,
+      name: insertWorkspace.name,
+      description: insertWorkspace.description || null,
+      status: insertWorkspace.status,
+      privacy: insertWorkspace.privacy,
+      ownerId: insertWorkspace.ownerId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastActivity: new Date(),
+      progress: insertWorkspace.progress || 0,
+      settings: insertWorkspace.settings || null,
+    };
+
+    this.workspaces.set(id, workspace);
+    return workspace;
+  }
+
+  async updateWorkspace(id: string, updates: Partial<Workspace>): Promise<Workspace | undefined> {
+    const workspace = this.workspaces.get(id);
+    if (!workspace) return undefined;
+
+    const updatedWorkspace = { 
+      ...workspace, 
+      ...updates, 
+      updatedAt: new Date(),
+      lastActivity: new Date()
+    };
+    this.workspaces.set(id, updatedWorkspace);
+    return updatedWorkspace;
+  }
+
+  async deleteWorkspace(id: string): Promise<boolean> {
+    // Also delete related members and projects
+    const members = Array.from(this.workspaceMembers.values()).filter(m => m.workspaceId === id);
+    const projects = Array.from(this.projects.values()).filter(p => p.workspaceId === id);
+    
+    members.forEach(member => this.workspaceMembers.delete(member.id));
+    
+    for (const project of projects) {
+      // Delete project collaborators
+      const collaborators = Array.from(this.projectCollaborators.values()).filter(c => c.projectId === project.id);
+      collaborators.forEach(collaborator => this.projectCollaborators.delete(collaborator.id));
+      this.projects.delete(project.id);
+    }
+
+    return this.workspaces.delete(id);
+  }
+
+  async searchWorkspaces(query: string): Promise<Workspace[]> {
+    const searchTerm = query.toLowerCase();
+    return Array.from(this.workspaces.values()).filter(workspace =>
+      workspace.name.toLowerCase().includes(searchTerm) ||
+      workspace.description?.toLowerCase().includes(searchTerm) ||
+      workspace.status.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  // Workspace Member methods
+  async getWorkspaceMembers(workspaceId: string): Promise<WorkspaceMember[]> {
+    return Array.from(this.workspaceMembers.values())
+      .filter(member => member.workspaceId === workspaceId)
+      .sort((a, b) => new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime());
+  }
+
+  async addWorkspaceMember(insertMember: InsertWorkspaceMember): Promise<WorkspaceMember> {
+    const id = `wm_${randomUUID().slice(0, 8)}`;
+    const member: WorkspaceMember = {
+      id,
+      workspaceId: insertMember.workspaceId,
+      userId: insertMember.userId,
+      userName: insertMember.userName,
+      userEmail: insertMember.userEmail || null,
+      role: insertMember.role,
+      joinedAt: new Date(),
+      permissions: insertMember.permissions || null,
+    };
+
+    this.workspaceMembers.set(id, member);
+    return member;
+  }
+
+  async updateWorkspaceMember(id: string, updates: Partial<WorkspaceMember>): Promise<WorkspaceMember | undefined> {
+    const member = this.workspaceMembers.get(id);
+    if (!member) return undefined;
+
+    const updatedMember = { ...member, ...updates };
+    this.workspaceMembers.set(id, updatedMember);
+    return updatedMember;
+  }
+
+  async removeWorkspaceMember(id: string): Promise<boolean> {
+    return this.workspaceMembers.delete(id);
+  }
+
+  // Project methods
+  async getProjects(): Promise<Project[]> {
+    return Array.from(this.projects.values())
+      .sort((a, b) => new Date(b.lastModified || 0).getTime() - new Date(a.lastModified || 0).getTime());
+  }
+
+  async getProjectById(id: string): Promise<Project | undefined> {
+    return this.projects.get(id);
+  }
+
+  async getProjectsByWorkspace(workspaceId: string): Promise<Project[]> {
+    return Array.from(this.projects.values())
+      .filter(project => project.workspaceId === workspaceId)
+      .sort((a, b) => new Date(b.lastModified || 0).getTime() - new Date(a.lastModified || 0).getTime());
+  }
+
+  async createProject(insertProject: InsertProject): Promise<Project> {
+    const id = `proj_${randomUUID().slice(0, 8)}`;
+    const project: Project = {
+      id,
+      name: insertProject.name,
+      description: insertProject.description || null,
+      workspaceId: insertProject.workspaceId,
+      ownerId: insertProject.ownerId,
+      status: insertProject.status,
+      backend: insertProject.backend || null,
+      circuitCode: insertProject.circuitCode || null,
+      configuration: insertProject.configuration || null,
+      results: insertProject.results || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastModified: new Date(),
+      runtime: insertProject.runtime || null,
+      isPublic: insertProject.isPublic || false,
+      tags: insertProject.tags || null,
+    };
+
+    this.projects.set(id, project);
+    return project;
+  }
+
+  async updateProject(id: string, updates: Partial<Project>): Promise<Project | undefined> {
+    const project = this.projects.get(id);
+    if (!project) return undefined;
+
+    const updatedProject = { 
+      ...project, 
+      ...updates, 
+      updatedAt: new Date(),
+      lastModified: new Date()
+    };
+    this.projects.set(id, updatedProject);
+    return updatedProject;
+  }
+
+  async deleteProject(id: string): Promise<boolean> {
+    // Delete related collaborators
+    const collaborators = Array.from(this.projectCollaborators.values()).filter(c => c.projectId === id);
+    collaborators.forEach(collaborator => this.projectCollaborators.delete(collaborator.id));
+    
+    return this.projects.delete(id);
+  }
+
+  async searchProjects(query: string): Promise<Project[]> {
+    const searchTerm = query.toLowerCase();
+    return Array.from(this.projects.values()).filter(project =>
+      project.name.toLowerCase().includes(searchTerm) ||
+      project.description?.toLowerCase().includes(searchTerm) ||
+      project.status.toLowerCase().includes(searchTerm) ||
+      project.backend?.toLowerCase().includes(searchTerm) ||
+      project.tags?.some(tag => tag.toLowerCase().includes(searchTerm))
+    );
+  }
+
+  // Project Collaborator methods
+  async getProjectCollaborators(projectId: string): Promise<ProjectCollaborator[]> {
+    return Array.from(this.projectCollaborators.values())
+      .filter(collaborator => collaborator.projectId === projectId)
+      .sort((a, b) => new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime());
+  }
+
+  async addProjectCollaborator(insertCollaborator: InsertProjectCollaborator): Promise<ProjectCollaborator> {
+    const id = `pc_${randomUUID().slice(0, 8)}`;
+    const collaborator: ProjectCollaborator = {
+      id,
+      projectId: insertCollaborator.projectId,
+      userId: insertCollaborator.userId,
+      userName: insertCollaborator.userName,
+      role: insertCollaborator.role,
+      addedAt: new Date(),
+      permissions: insertCollaborator.permissions || null,
+    };
+
+    this.projectCollaborators.set(id, collaborator);
+    return collaborator;
+  }
+
+  async updateProjectCollaborator(id: string, updates: Partial<ProjectCollaborator>): Promise<ProjectCollaborator | undefined> {
+    const collaborator = this.projectCollaborators.get(id);
+    if (!collaborator) return undefined;
+
+    const updatedCollaborator = { ...collaborator, ...updates };
+    this.projectCollaborators.set(id, updatedCollaborator);
+    return updatedCollaborator;
+  }
+
+  async removeProjectCollaborator(id: string): Promise<boolean> {
+    return this.projectCollaborators.delete(id);
   }
 }
 

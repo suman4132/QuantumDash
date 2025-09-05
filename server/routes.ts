@@ -1,7 +1,11 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertJobSchema, insertSessionSchema, JobStatus } from "@shared/schema";
+import { 
+  insertJobSchema, insertSessionSchema, insertWorkspaceSchema, 
+  insertWorkspaceMemberSchema, insertProjectSchema, insertProjectCollaboratorSchema,
+  JobStatus, WorkspaceStatus, ProjectStatus 
+} from "@shared/schema";
 import { z } from "zod";
 import { ibmQuantumService } from "./ibm-quantum";
 
@@ -303,6 +307,282 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error exporting jobs to JSON:", error);
       res.status(500).json({ error: "Failed to export JSON" });
+    }
+  });
+
+  // ==================== TEAMWORK API ROUTES ====================
+
+  // Workspace endpoints
+  app.get("/api/workspaces", async (req, res) => {
+    try {
+      const workspaces = await storage.getWorkspaces();
+      res.json(workspaces);
+    } catch (error) {
+      console.error("Error fetching workspaces:", error);
+      res.status(500).json({ error: "Failed to fetch workspaces" });
+    }
+  });
+
+  app.get("/api/workspaces/search", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query) {
+        return res.status(400).json({ error: "Search query is required" });
+      }
+      const workspaces = await storage.searchWorkspaces(query);
+      res.json(workspaces);
+    } catch (error) {
+      console.error("Error searching workspaces:", error);
+      res.status(500).json({ error: "Search failed" });
+    }
+  });
+
+  app.get("/api/workspaces/:id", async (req, res) => {
+    try {
+      const workspace = await storage.getWorkspaceById(req.params.id);
+      if (!workspace) {
+        return res.status(404).json({ error: "Workspace not found" });
+      }
+      res.json(workspace);
+    } catch (error) {
+      console.error(`Error fetching workspace with ID ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to fetch workspace" });
+    }
+  });
+
+  app.post("/api/workspaces", async (req, res) => {
+    try {
+      const workspaceData = insertWorkspaceSchema.parse(req.body);
+      const workspace = await storage.createWorkspace(workspaceData);
+      res.status(201).json(workspace);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Error creating workspace:", error);
+      res.status(500).json({ error: "Failed to create workspace" });
+    }
+  });
+
+  app.patch("/api/workspaces/:id", async (req, res) => {
+    try {
+      const workspace = await storage.updateWorkspace(req.params.id, req.body);
+      if (!workspace) {
+        return res.status(404).json({ error: "Workspace not found" });
+      }
+      res.json(workspace);
+    } catch (error) {
+      console.error(`Error updating workspace ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to update workspace" });
+    }
+  });
+
+  app.delete("/api/workspaces/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteWorkspace(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Workspace not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error(`Error deleting workspace ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to delete workspace" });
+    }
+  });
+
+  // Workspace Member endpoints
+  app.get("/api/workspaces/:workspaceId/members", async (req, res) => {
+    try {
+      const members = await storage.getWorkspaceMembers(req.params.workspaceId);
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching workspace members:", error);
+      res.status(500).json({ error: "Failed to fetch workspace members" });
+    }
+  });
+
+  app.post("/api/workspaces/:workspaceId/members", async (req, res) => {
+    try {
+      const memberData = insertWorkspaceMemberSchema.parse({
+        ...req.body,
+        workspaceId: req.params.workspaceId
+      });
+      const member = await storage.addWorkspaceMember(memberData);
+      res.status(201).json(member);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Error adding workspace member:", error);
+      res.status(500).json({ error: "Failed to add workspace member" });
+    }
+  });
+
+  app.patch("/api/workspace-members/:id", async (req, res) => {
+    try {
+      const member = await storage.updateWorkspaceMember(req.params.id, req.body);
+      if (!member) {
+        return res.status(404).json({ error: "Workspace member not found" });
+      }
+      res.json(member);
+    } catch (error) {
+      console.error(`Error updating workspace member ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to update workspace member" });
+    }
+  });
+
+  app.delete("/api/workspace-members/:id", async (req, res) => {
+    try {
+      const success = await storage.removeWorkspaceMember(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Workspace member not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error(`Error removing workspace member ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to remove workspace member" });
+    }
+  });
+
+  // Project endpoints
+  app.get("/api/projects", async (req, res) => {
+    try {
+      const projects = await storage.getProjects();
+      res.json(projects);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      res.status(500).json({ error: "Failed to fetch projects" });
+    }
+  });
+
+  app.get("/api/projects/search", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query) {
+        return res.status(400).json({ error: "Search query is required" });
+      }
+      const projects = await storage.searchProjects(query);
+      res.json(projects);
+    } catch (error) {
+      console.error("Error searching projects:", error);
+      res.status(500).json({ error: "Search failed" });
+    }
+  });
+
+  app.get("/api/workspaces/:workspaceId/projects", async (req, res) => {
+    try {
+      const projects = await storage.getProjectsByWorkspace(req.params.workspaceId);
+      res.json(projects);
+    } catch (error) {
+      console.error("Error fetching workspace projects:", error);
+      res.status(500).json({ error: "Failed to fetch workspace projects" });
+    }
+  });
+
+  app.get("/api/projects/:id", async (req, res) => {
+    try {
+      const project = await storage.getProjectById(req.params.id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      res.json(project);
+    } catch (error) {
+      console.error(`Error fetching project with ID ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to fetch project" });
+    }
+  });
+
+  app.post("/api/projects", async (req, res) => {
+    try {
+      const projectData = insertProjectSchema.parse(req.body);
+      const project = await storage.createProject(projectData);
+      res.status(201).json(project);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Error creating project:", error);
+      res.status(500).json({ error: "Failed to create project" });
+    }
+  });
+
+  app.patch("/api/projects/:id", async (req, res) => {
+    try {
+      const project = await storage.updateProject(req.params.id, req.body);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      res.json(project);
+    } catch (error) {
+      console.error(`Error updating project ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to update project" });
+    }
+  });
+
+  app.delete("/api/projects/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteProject(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error(`Error deleting project ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to delete project" });
+    }
+  });
+
+  // Project Collaborator endpoints
+  app.get("/api/projects/:projectId/collaborators", async (req, res) => {
+    try {
+      const collaborators = await storage.getProjectCollaborators(req.params.projectId);
+      res.json(collaborators);
+    } catch (error) {
+      console.error("Error fetching project collaborators:", error);
+      res.status(500).json({ error: "Failed to fetch project collaborators" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/collaborators", async (req, res) => {
+    try {
+      const collaboratorData = insertProjectCollaboratorSchema.parse({
+        ...req.body,
+        projectId: req.params.projectId
+      });
+      const collaborator = await storage.addProjectCollaborator(collaboratorData);
+      res.status(201).json(collaborator);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Error adding project collaborator:", error);
+      res.status(500).json({ error: "Failed to add project collaborator" });
+    }
+  });
+
+  app.patch("/api/project-collaborators/:id", async (req, res) => {
+    try {
+      const collaborator = await storage.updateProjectCollaborator(req.params.id, req.body);
+      if (!collaborator) {
+        return res.status(404).json({ error: "Project collaborator not found" });
+      }
+      res.json(collaborator);
+    } catch (error) {
+      console.error(`Error updating project collaborator ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to update project collaborator" });
+    }
+  });
+
+  app.delete("/api/project-collaborators/:id", async (req, res) => {
+    try {
+      const success = await storage.removeProjectCollaborator(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Project collaborator not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error(`Error removing project collaborator ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to remove project collaborator" });
     }
   });
 

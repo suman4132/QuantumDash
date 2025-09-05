@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Moon, Sun, Search, RefreshCw, Bell, CloudDownload, X } from "lucide-react";
+import { Moon, Sun, Search, RefreshCw, Bell, CloudDownload, X, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -340,6 +341,19 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
                 {syncStatus === 'idle' && 'Sync IBM'}
               </Button>
             </div>
+
+            {/* Teamwork Button */}
+            <Link to="/teamwork">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/20"
+                data-testid="button-teamwork"
+              >
+                <Users className="h-4 w-4" />
+                Teamwork
+              </Button>
+            </Link>
 
             {/* Notification Bell */}
             <div className="relative">

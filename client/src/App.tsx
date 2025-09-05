@@ -8,6 +8,7 @@ import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
 import Dashboard from "@/pages/dashboard";
+import Teamwork from "@/pages/teamwork";
 import NotFound from "@/pages/not-found";
 
 // Protected Route Component
@@ -37,6 +38,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Dashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/teamwork" 
+                element={
+                  <ProtectedRoute>
+                    <Teamwork />
                   </ProtectedRoute>
                 } 
               />
