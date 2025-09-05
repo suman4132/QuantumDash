@@ -1,4 +1,3 @@
-
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, Clock, Server, Hash, Tag, CheckCircle, XCircle, Play, Pause, Cpu, Zap, Code, BarChart3, Target, Activity, Database, Settings, TrendingUp, GitBranch } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -123,177 +122,249 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
 
         {/* Modal */}
         <motion.div
-          className="relative w-full max-w-5xl max-h-[90vh] overflow-auto"
+          className="relative w-full max-w-6xl max-h-[90vh] overflow-auto"
           variants={modalVariants}
           initial="hidden"
           animate="visible"
           exit="exit"
           transition={{ duration: 0.3 }}
         >
-          <Card className="bg-white dark:bg-gray-800 shadow-2xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xl font-semibold">Job Details</CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="h-8 w-8"
-                data-testid="close-job-details"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </CardHeader>
-
-            <CardContent className="p-0">
-              {/* Header Info */}
-              <div className="p-6 pb-2">
-                <div className="flex items-center justify-between">
+          <Card className="bg-gradient-to-br from-white via-white to-gray-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 shadow-2xl border-0 ring-1 ring-gray-200/50 dark:ring-gray-700/50">
+            <div className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5"></div>
+              <div className="absolute inset-0 opacity-30"></div>
+              <CardHeader className="relative flex flex-row items-center justify-between space-y-0 py-6 px-8 border-b border-gray-200/70 dark:border-gray-700/70">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                    <Database className="w-6 h-6 text-white" />
+                  </div>
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                      {job.name || "Unnamed Job"}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
+                    <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {job.name}
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-mono bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full mt-1">
                       ID: {job.id}
                     </p>
                   </div>
-                  <Badge className={`${statusColors[job.status as JobStatus]} flex items-center gap-1.5 text-sm`}>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Badge className={`${statusColors[job.status as JobStatus]} flex items-center gap-2 text-sm px-4 py-2 font-medium shadow-sm`}>
                     {statusIcons[job.status as JobStatus]}
                     {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
                   </Badge>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onClose}
+                    className="h-10 w-10 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
+                    data-testid="close-job-details"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
                 </div>
-              </div>
+              </CardHeader>
+            </div>
 
+            <CardContent className="p-0">
               <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 mx-6 mb-4">
-                  <TabsTrigger value="overview" className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4" />
-                    Overview
-                  </TabsTrigger>
-                  <TabsTrigger value="circuit" className="flex items-center gap-2">
-                    <Code className="w-4 h-4" />
-                    Circuit
-                  </TabsTrigger>
-                  <TabsTrigger value="execution" className="flex items-center gap-2">
-                    <Cpu className="w-4 h-4" />
-                    Execution
-                  </TabsTrigger>
-                  <TabsTrigger value="results" className="flex items-center gap-2">
-                    <Target className="w-4 h-4" />
-                    Results
-                  </TabsTrigger>
-                  <TabsTrigger value="calibration" className="flex items-center gap-2">
-                    <Settings className="w-4 h-4" />
-                    System
-                  </TabsTrigger>
-                </TabsList>
+                <div className="border-b border-gray-200/70 dark:border-gray-700/70 bg-gradient-to-r from-gray-50/80 to-blue-50/30 dark:from-gray-800/80 dark:to-gray-700/50">
+                  <TabsList className="grid w-full grid-cols-5 bg-transparent p-2 mx-8">
+                    <TabsTrigger value="overview" className="flex items-center gap-2 font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-lg dark:data-[state=active]:bg-gray-700 data-[state=active]:scale-105 rounded-xl">
+                      <BarChart3 className="w-4 h-4" />
+                      Overview
+                    </TabsTrigger>
+                    <TabsTrigger value="circuit" className="flex items-center gap-2 font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-lg dark:data-[state=active]:bg-gray-700 data-[state=active]:scale-105 rounded-xl">
+                      <Code className="w-4 h-4" />
+                      Circuit
+                    </TabsTrigger>
+                    <TabsTrigger value="execution" className="flex items-center gap-2 font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-lg dark:data-[state=active]:bg-gray-700 data-[state=active]:scale-105 rounded-xl">
+                      <Cpu className="w-4 h-4" />
+                      Execution
+                    </TabsTrigger>
+                    <TabsTrigger value="results" className="flex items-center gap-2 font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-lg dark:data-[state=active]:bg-gray-700 data-[state=active]:scale-105 rounded-xl">
+                      <Target className="w-4 h-4" />
+                      Results
+                    </TabsTrigger>
+                    <TabsTrigger value="calibration" className="flex items-center gap-2 font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-lg dark:data-[state=active]:bg-gray-700 data-[state=active]:scale-105 rounded-xl">
+                      <Settings className="w-4 h-4" />
+                      System
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-                <TabsContent value="overview" className="px-6 pb-6 space-y-6">
-                  {/* Basic Information */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                        <Activity className="w-4 h-4" />
-                        Job Information
-                      </h4>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Server className="w-4 h-4 text-gray-500" />
-                          <span className="text-sm font-medium">Backend:</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {job.backend}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-500" />
-                          <span className="text-sm font-medium">Submitted:</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {format(new Date(job.submissionTime), "PPpp")}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-gray-500" />
-                          <span className="text-sm font-medium">Duration:</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {formatDuration(job.duration)}
-                          </span>
-                        </div>
-                        {job.queuePosition && (
-                          <div className="flex items-center gap-2">
-                            <Hash className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm font-medium">Queue Position:</span>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                              #{job.queuePosition}
-                            </span>
-                          </div>
-                        )}
+                <TabsContent value="overview" className="px-8 py-6 space-y-8">
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-md">
+                        <BarChart3 className="w-5 h-5 text-white" />
                       </div>
+                      <h4 className="text-xl font-bold text-gray-900 dark:text-white">
+                        Job Overview
+                      </h4>
                     </div>
 
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                        <Zap className="w-4 h-4" />
-                        Circuit Specifications
-                      </h4>
-                      <div className="space-y-3">
-                        {job.qubits && (
-                          <div className="flex items-center gap-2">
-                            <Cpu className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm font-medium">Qubits:</span>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                              {job.qubits}
-                            </span>
+                    {/* Key Metrics Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                      <motion.div 
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-gradient-to-br from-blue-50 to-blue-100/70 dark:from-blue-900/30 dark:to-blue-800/30 border border-blue-200/60 dark:border-blue-700/60 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
+                            <Calendar className="w-5 h-5 text-white" />
                           </div>
-                        )}
-                        {job.shots && (
-                          <div className="flex items-center gap-2">
-                            <Target className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm font-medium">Shots:</span>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                              {job.shots.toLocaleString()}
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">Time Ago:</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {formatDistanceToNow(new Date(job.submissionTime), { addSuffix: true })}
-                          </span>
+                          <span className="font-semibold text-blue-800 dark:text-blue-200">Created</span>
                         </div>
-                        {job.startTime && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">Started:</span>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                              {format(new Date(job.startTime), "PPpp")}
+                        <div className="space-y-1">
+                          <div className="text-lg font-bold text-blue-900 dark:text-blue-100">
+                            {format(job.submissionTime, "MMM dd, yyyy")}
+                          </div>
+                          <div className="text-sm text-blue-700 dark:text-blue-300">
+                            {format(job.submissionTime, "HH:mm:ss")}
+                          </div>
+                        </div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-gradient-to-br from-purple-50 to-purple-100/70 dark:from-purple-900/30 dark:to-purple-800/30 border border-purple-200/60 dark:border-purple-700/60 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-purple-500 rounded-lg shadow-sm">
+                            <Clock className="w-5 h-5 text-white" />
+                          </div>
+                          <span className="font-semibold text-purple-800 dark:text-purple-200">Duration</span>
+                        </div>
+                        <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                          {formatDuration(job.duration)}
+                        </div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-gradient-to-br from-green-50 to-green-100/70 dark:from-green-900/30 dark:to-green-800/30 border border-green-200/60 dark:border-green-700/60 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-green-500 rounded-lg shadow-sm">
+                            <Server className="w-5 h-5 text-white" />
+                          </div>
+                          <span className="font-semibold text-green-800 dark:text-green-200">Backend</span>
+                        </div>
+                        <div className="text-sm text-green-900 dark:text-green-100 font-mono bg-green-100 dark:bg-green-800/30 px-3 py-2 rounded-lg">
+                          {job.backend}
+                        </div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-gradient-to-br from-amber-50 to-amber-100/70 dark:from-amber-900/30 dark:to-amber-800/30 border border-amber-200/60 dark:border-amber-700/60 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-amber-500 rounded-lg shadow-sm">
+                            <Hash className="w-5 h-5 text-white" />
+                          </div>
+                          <span className="font-semibold text-amber-800 dark:text-amber-200">Priority</span>
+                        </div>
+                        <div className="text-xl font-bold text-amber-900 dark:text-amber-100">
+                          Normal
+                        </div>
+                      </motion.div>
+                    </div>
+
+                    {/* Detailed Information */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="bg-gradient-to-br from-gray-50/50 via-white to-blue-50/30 dark:from-gray-900/50 dark:via-gray-800/50 dark:to-gray-700/50 border border-gray-200/60 dark:border-gray-700/60 rounded-2xl p-6 shadow-lg">
+                        <h5 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4">
+                          <Activity className="w-5 h-5 text-blue-600" />
+                          Job Information
+                        </h5>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <Server className="w-4 h-4 text-blue-600" />
+                              <span className="text-sm font-semibold text-gray-900 dark:text-white">Backend:</span>
+                            </div>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 font-mono bg-white dark:bg-gray-700 px-2 py-1 rounded">
+                              {job.backend}
                             </span>
                           </div>
-                        )}
-                        {job.endTime && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">Completed:</span>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                              {format(new Date(job.endTime), "PPpp")}
+                          <div className="flex items-center justify-between p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <Calendar className="w-4 h-4 text-blue-600" />
+                              <span className="text-sm font-semibold text-gray-900 dark:text-white">Submitted:</span>
+                            </div>
+                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                              {format(new Date(job.submissionTime), "PPpp")}
                             </span>
                           </div>
-                        )}
+                          <div className="flex items-center justify-between p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <Clock className="w-4 h-4 text-blue-600" />
+                              <span className="text-sm font-semibold text-gray-900 dark:text-white">Duration:</span>
+                            </div>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 font-mono">
+                              {formatDuration(job.duration)}
+                            </span>
+                          </div>
+                          {job.queuePosition && (
+                            <div className="flex items-center justify-between p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <Hash className="w-4 h-4 text-blue-600" />
+                                <span className="text-sm font-semibold text-gray-900 dark:text-white">Queue Position:</span>
+                              </div>
+                              <Badge variant="outline" className="font-mono">#{job.queuePosition}</Badge>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-gray-50/50 via-white to-purple-50/30 dark:from-gray-900/50 dark:via-gray-800/50 dark:to-gray-700/50 border border-gray-200/60 dark:border-gray-700/60 rounded-2xl p-6 shadow-lg">
+                        <h5 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4">
+                          <Zap className="w-5 h-5 text-purple-600" />
+                          Circuit Specifications
+                        </h5>
+                        <div className="space-y-4">
+                          {job.qubits && (
+                            <div className="flex items-center justify-between p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <Cpu className="w-4 h-4 text-purple-600" />
+                                <span className="text-sm font-semibold text-gray-900 dark:text-white">Qubits:</span>
+                              </div>
+                              <span className="text-lg font-bold text-purple-600 bg-purple-100 dark:bg-purple-900/30 px-3 py-1 rounded-lg">
+                                {job.qubits}
+                              </span>
+                            </div>
+                          )}
+                          {job.shots && (
+                            <div className="flex items-center justify-between p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <Target className="w-4 h-4 text-purple-600" />
+                                <span className="text-sm font-semibold text-gray-900 dark:text-white">Shots:</span>
+                              </div>
+                              <span className="text-lg font-bold text-purple-600 bg-purple-100 dark:bg-purple-900/30 px-3 py-1 rounded-lg">
+                                {job.shots.toLocaleString()}
+                              </span>
+                            </div>
+                          )}
+                          {job.program && (
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-3">
+                                <Code className="w-4 h-4 text-purple-600" />
+                                <span className="text-sm font-semibold text-gray-900 dark:text-white">Program Preview:</span>
+                              </div>
+                              <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-4 shadow-inner">
+                                <div className="text-xs font-mono text-green-400">
+                                  {job.program.length > 150
+                                    ? `${job.program.substring(0, 150)}...`
+                                    : job.program}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-
-                  {/* Progress for Running Jobs */}
-                  {job.status === "running" && (
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                      <h4 className="text-sm font-medium mb-3 text-green-800 dark:text-green-200">Execution Progress</h4>
-                      <div className="w-full bg-green-200 dark:bg-green-700 rounded-full h-3">
-                        <motion.div
-                          className="bg-green-500 h-3 rounded-full"
-                          initial={{ width: "0%" }}
-                          animate={{ width: "70%" }}
-                          transition={{ duration: 2, ease: "easeOut" }}
-                        />
-                      </div>
-                      <p className="text-xs text-green-700 dark:text-green-300 mt-2">Job is currently executing on quantum hardware...</p>
-                    </div>
-                  )}
                 </TabsContent>
 
                 <TabsContent value="circuit" className="px-6 pb-6 space-y-6">
@@ -347,16 +418,31 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                           <Badge variant="outline" className="text-xs">Map View</Badge>
                         </div>
                       </div>
-                      <div className="bg-gray-50 dark:bg-gray-900/50 border rounded-lg p-4">
+                      <div className="bg-gradient-to-br from-gray-50/50 via-white to-gray-50 dark:from-gray-900/50 dark:via-gray-800/50 dark:to-gray-900/50 border border-gray-200/60 dark:border-gray-700/60 rounded-2xl p-6 shadow-lg">
                         <div className="relative w-full h-96 flex items-center justify-center">
-                          <svg width="100%" height="100%" viewBox="0 0 400 300" className="border rounded">
+                          <svg width="100%" height="100%" viewBox="0 0 400 300" className="rounded-xl">
+                            <defs>
+                              <radialGradient id="nodeGradient" cx="0.5" cy="0.5" r="0.5">
+                                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
+                                <stop offset="100%" stopColor="#000000" stopOpacity="0.2" />
+                              </radialGradient>
+                              <filter id="glow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge> 
+                                  <feMergeNode in="coloredBlur"/>
+                                  <feMergeNode in="SourceGraphic"/> 
+                                </feMerge>
+                              </filter>
+                            </defs>
+                            
                             {/* Draw connections first (behind nodes) */}
                             {topologyData.connections.map((conn, i) => {
                               const fromNode = topologyData.nodes[conn.from];
                               const toNode = topologyData.nodes[conn.to];
                               if (!fromNode || !toNode) return null;
                               
-                              const opacity = 1 - conn.error * 100; // Higher error = more transparent
+                              const opacity = Math.max(0.3, 1 - conn.error * 100);
+                              const color = conn.error > 0.003 ? '#ef4444' : conn.error > 0.002 ? '#f59e0b' : '#10b981';
                               return (
                                 <line
                                   key={`conn-${i}`}
@@ -364,9 +450,10 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                                   y1={fromNode.y}
                                   x2={toNode.x}
                                   y2={toNode.y}
-                                  stroke={conn.error > 0.003 ? '#ef4444' : '#10b981'}
-                                  strokeWidth="2"
-                                  opacity={Math.max(0.3, opacity)}
+                                  stroke={color}
+                                  strokeWidth="3"
+                                  opacity={opacity}
+                                  filter="url(#glow)"
                                 />
                               );
                             })}
@@ -379,18 +466,27 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                                   <circle
                                     cx={node.x}
                                     cy={node.y}
-                                    r="12"
+                                    r="16"
                                     fill={color}
-                                    stroke="#374151"
-                                    strokeWidth="1"
+                                    stroke="#ffffff"
+                                    strokeWidth="2"
+                                    filter="url(#glow)"
+                                    className="hover:r-18 transition-all duration-200 cursor-pointer"
+                                  />
+                                  <circle
+                                    cx={node.x}
+                                    cy={node.y}
+                                    r="16"
+                                    fill="url(#nodeGradient)"
                                   />
                                   <text
                                     x={node.x}
                                     y={node.y + 4}
                                     textAnchor="middle"
-                                    fontSize="10"
+                                    fontSize="11"
                                     fill="white"
                                     fontWeight="bold"
+                                    className="pointer-events-none"
                                   >
                                     {node.id}
                                   </text>
@@ -503,13 +599,36 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                           <TrendingUp className="w-4 h-4" />
                           Queue Position Timeline (24h)
                         </h5>
-                        <div className="bg-gray-50 dark:bg-gray-900/50 border rounded-lg p-4">
-                          <ResponsiveContainer width="100%" height={200}>
+                        <div className="bg-gradient-to-br from-blue-50/50 via-white to-indigo-50/50 dark:from-gray-900/50 dark:via-gray-800/50 dark:to-indigo-900/20 border border-blue-200/60 dark:border-gray-700/60 rounded-2xl p-6 shadow-lg">
+                          <ResponsiveContainer width="100%" height={250}>
                             <AreaChart data={queueData}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="time" fontSize={12} />
-                              <YAxis fontSize={12} />
+                              <defs>
+                                <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                              <XAxis 
+                                dataKey="time" 
+                                fontSize={12} 
+                                stroke="#64748b"
+                                tickLine={false}
+                                axisLine={false}
+                              />
+                              <YAxis 
+                                fontSize={12} 
+                                stroke="#64748b"
+                                tickLine={false}
+                                axisLine={false}
+                              />
                               <Tooltip 
+                                contentStyle={{
+                                  backgroundColor: 'white',
+                                  border: '1px solid #e2e8f0',
+                                  borderRadius: '12px',
+                                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)'
+                                }}
                                 formatter={(value, name) => [
                                   name === 'position' ? `#${value}` : `${value} min`,
                                   name === 'position' ? 'Queue Position' : 'Est. Wait Time'
@@ -519,8 +638,10 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                                 type="monotone" 
                                 dataKey="position" 
                                 stroke="#3b82f6" 
-                                fill="#3b82f6" 
-                                fillOpacity={0.3}
+                                strokeWidth={3}
+                                fill="url(#areaGradient)"
+                                dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                                activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2, fill: '#ffffff' }}
                               />
                             </AreaChart>
                           </ResponsiveContainer>
@@ -531,14 +652,47 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                     {/* Performance Metrics Chart */}
                     <div>
                       <h5 className="font-medium mb-4">Backend Performance Metrics</h5>
-                      <div className="bg-gray-50 dark:bg-gray-900/50 border rounded-lg p-4">
-                        <ResponsiveContainer width="100%" height={250}>
-                          <BarChart data={errorData.filter(d => d.type === 'error')}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" fontSize={12} angle={-45} textAnchor="end" height={80} />
-                            <YAxis fontSize={12} tickFormatter={formatScientific} />
-                            <Tooltip formatter={(value) => [formatScientific(Number(value)), 'Error Rate']} />
-                            <Bar dataKey="value" fill="#ef4444" />
+                      <div className="bg-gradient-to-br from-red-50/50 via-white to-orange-50/50 dark:from-gray-900/50 dark:via-gray-800/50 dark:to-red-900/20 border border-red-200/60 dark:border-gray-700/60 rounded-2xl p-6 shadow-lg">
+                        <ResponsiveContainer width="100%" height={280}>
+                          <BarChart data={errorData.filter(d => d.type === 'error')} margin={{ bottom: 80 }}>
+                            <defs>
+                              <linearGradient id="errorGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.9}/>
+                                <stop offset="95%" stopColor="#f97316" stopOpacity={0.6}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                            <XAxis 
+                              dataKey="name" 
+                              fontSize={12} 
+                              angle={-45} 
+                              textAnchor="end" 
+                              height={80}
+                              stroke="#64748b"
+                              tickLine={false}
+                              axisLine={false}
+                            />
+                            <YAxis 
+                              fontSize={12} 
+                              tickFormatter={formatScientific}
+                              stroke="#64748b"
+                              tickLine={false}
+                              axisLine={false}
+                            />
+                            <Tooltip 
+                              contentStyle={{
+                                backgroundColor: 'white',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)'
+                              }}
+                              formatter={(value) => [formatScientific(Number(value)), 'Error Rate']} 
+                            />
+                            <Bar 
+                              dataKey="value" 
+                              fill="url(#errorGradient)"
+                              radius={[8, 8, 0, 0]}
+                            />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
@@ -554,31 +708,37 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                     </h4>
                     
                     {job.results ? (
-                      <div className="space-y-4">
-                        <div className="bg-gray-50 dark:bg-gray-900/50 border rounded-lg p-4">
-                          <h5 className="font-medium mb-2">Measurement Results</h5>
-                          <pre className="text-sm font-mono text-gray-700 dark:text-gray-300 overflow-x-auto">
-                            {JSON.stringify(job.results, null, 2)}
-                          </pre>
+                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
+                        <h5 className="font-medium text-green-800 dark:text-green-200 mb-4">Measurement Results</h5>
+                        <div className="bg-white dark:bg-gray-800 rounded p-4 font-mono text-sm">
+                          <pre>{JSON.stringify(job.results, null, 2)}</pre>
                         </div>
                       </div>
-                    ) : job.status === 'done' ? (
-                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                        <p className="text-sm text-green-700 dark:text-green-300">
-                          Job completed successfully. Results may be available in the original quantum computing platform.
-                        </p>
-                      </div>
-                    ) : job.status === 'running' ? (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                        <p className="text-sm text-blue-700 dark:text-blue-300">
-                          Job is currently executing. Results will be available upon completion.
-                        </p>
-                      </div>
                     ) : (
-                      <div className="bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800 rounded-lg p-4">
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                          No results available yet. Job status: {job.status}
+                      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center">
+                        <p className="text-gray-500 dark:text-gray-400">
+                          {job.status === "queued" && "Job is queued - results will appear when execution completes"}
+                          {job.status === "running" && "Job is currently running - results will appear when execution completes"}
+                          {job.status === "done" && "Results not available"}
+                          {job.status === "failed" && "Job failed - no results available"}
+                          {job.status === "cancelled" && "Job was cancelled - no results available"}
                         </p>
+                      </div>
+                    )}
+                    
+                    {/* Show progress for running jobs */}
+                    {job.status === "running" && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <h4 className="text-sm font-medium mb-3 text-blue-800 dark:text-blue-200">Execution Progress</h4>
+                        <div className="w-full bg-blue-200 dark:bg-blue-700 rounded-full h-3">
+                          <motion.div
+                            className="bg-blue-500 h-3 rounded-full"
+                            initial={{ width: "0%" }}
+                            animate={{ width: "70%" }}
+                            transition={{ duration: 2, ease: "easeOut" }}
+                          />
+                        </div>
+                        <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">Job is currently executing on quantum hardware...</p>
                       </div>
                     )}
                   </div>
@@ -707,42 +867,6 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                   </div>
                 </TabsContent>
               </Tabs>
-
-              {/* Tags and Error sections remain visible in overview tab */}
-              {(job.tags && job.tags.length > 0 || job.error) && (
-                <div className="px-6 pb-4 space-y-4">
-                  {/* Tags */}
-                  {job.tags && job.tags.length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Tag className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm font-medium">Tags:</span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {job.tags.map((tag, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Error Message */}
-                  {job.error && (
-                    <div>
-                      <h4 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">
-                        Error Details:
-                      </h4>
-                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
-                        <p className="text-sm text-red-700 dark:text-red-300 font-mono">
-                          {job.error}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
             </CardContent>
           </Card>
         </motion.div>
