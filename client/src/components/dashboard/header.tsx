@@ -1,28 +1,43 @@
 import { useState, useEffect } from "react";
-import { Moon, Sun, Search, RefreshCw, Bell, CloudDownload, X, Users } from "lucide-react";
+import {
+  Moon,
+  Sun,
+  Search,
+  RefreshCw,
+  Bell,
+  CloudDownload,
+  X,
+  Users,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useTheme } from "@/hooks/use-theme";
 import { useJobStats, useJobs } from "@/hooks/use-jobs";
 import { motion } from "framer-motion";
-import { 
-  Settings, 
+import {
+  Settings,
   Filter,
   Download,
   BarChart3,
   LogOut,
-  User
+  User,
 } from "lucide-react";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -52,7 +67,13 @@ function LiveJobIndicator() {
   );
 }
 
-export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onViewChange, onNotificationToggle }: HeaderProps) {
+export function Header({
+  onSearch,
+  onRefreshIntervalChange,
+  onManualRefresh,
+  onViewChange,
+  onNotificationToggle,
+}: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -62,16 +83,27 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
   const { user, logout } = useAuth();
   const { toast } = useToast();
 
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected'>('connected');
+  const [syncStatus, setSyncStatus] = useState<
+    "idle" | "syncing" | "success" | "error"
+  >("idle");
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connected" | "connecting" | "disconnected"
+  >("connected");
   const [lastSync, setLastSync] = useState<Date>(new Date());
 
   // Simulate connection status updates
   useEffect(() => {
     const interval = setInterval(() => {
       // Randomly simulate connection status changes for demo
-      const statuses: Array<'connected' | 'connecting' | 'disconnected'> = ['connected', 'connected', 'connected', 'connecting', 'disconnected'];
-      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      const statuses: Array<"connected" | "connecting" | "disconnected"> = [
+        "connected",
+        "connected",
+        "connected",
+        "connecting",
+        "disconnected",
+      ];
+      const randomStatus =
+        statuses[Math.floor(Math.random() * statuses.length)];
       setConnectionStatus(randomStatus);
     }, 10000);
 
@@ -79,24 +111,24 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
   }, []);
 
   const handleSync = async () => {
-    setSyncStatus('syncing');
-    setConnectionStatus('connecting');
+    setSyncStatus("syncing");
+    setConnectionStatus("connecting");
     try {
-      const response = await fetch('/api/sync/ibm', { method: 'POST' });
+      const response = await fetch("/api/sync/ibm", { method: "POST" });
       if (response.ok) {
-        setSyncStatus('success');
-        setConnectionStatus('connected');
+        setSyncStatus("success");
+        setConnectionStatus("connected");
         setLastSync(new Date());
-        setTimeout(() => setSyncStatus('idle'), 2000);
+        setTimeout(() => setSyncStatus("idle"), 2000);
       } else {
-        setSyncStatus('error');
-        setConnectionStatus('disconnected');
-        setTimeout(() => setSyncStatus('idle'), 2000);
+        setSyncStatus("error");
+        setConnectionStatus("disconnected");
+        setTimeout(() => setSyncStatus("idle"), 2000);
       }
     } catch (error) {
-      setSyncStatus('error');
-      setConnectionStatus('disconnected');
-      setTimeout(() => setSyncStatus('idle'), 2000);
+      setSyncStatus("error");
+      setConnectionStatus("disconnected");
+      setTimeout(() => setSyncStatus("idle"), 2000);
     }
   };
 
@@ -105,13 +137,14 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
   const jobs = jobsData?.jobs || [];
 
   // Get recent completed jobs (last 24 hours) and running jobs for notification count
-  const recentCompletedJobs = jobs.filter(job => 
-    (job.status === "done" || job.status === "failed") && 
-    job.endTime && 
-    new Date(job.endTime).getTime() > Date.now() - 24 * 60 * 60 * 1000
+  const recentCompletedJobs = jobs.filter(
+    (job) =>
+      (job.status === "done" || job.status === "failed") &&
+      job.endTime &&
+      new Date(job.endTime).getTime() > Date.now() - 24 * 60 * 60 * 1000,
   );
 
-  const runningJobs = jobs.filter(job => job.status === "running");
+  const runningJobs = jobs.filter((job) => job.status === "running");
   const notificationCount = recentCompletedJobs.length + runningJobs.length;
 
   useEffect(() => {
@@ -136,10 +169,10 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
   const handleIBMSync = async () => {
     setIsRefreshing(true); // Assuming setIsRefreshing is a typo and should be setIsSyncing
     try {
-      const response = await fetch('/api/sync/ibm', {
-        method: 'POST',
+      const response = await fetch("/api/sync/ibm", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -150,7 +183,7 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
           description: "Successfully synced with IBM Quantum Cloud",
         });
       } else {
-        throw new Error('Sync failed');
+        throw new Error("Sync failed");
       }
     } catch (error) {
       toast({
@@ -165,16 +198,31 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
 
   // Search suggestions based on common keywords
   const searchSuggestions = [
-    "running", "queued", "done", "failed", "cancelled",
-    "ibm_cairo", "ibm_brisbane", "ibm_kyoto", "simulator",
-    "VQE", "QAOA", "Grover", "Shor", "optimization",
-    "error", "success", "timeout", "circuit", "backend"
+    "running",
+    "queued",
+    "done",
+    "failed",
+    "cancelled",
+    "ibm_cairo",
+    "ibm_brisbane",
+    "ibm_kyoto",
+    "simulator",
+    "VQE",
+    "QAOA",
+    "Grover",
+    "Shor",
+    "optimization",
+    "error",
+    "success",
+    "timeout",
+    "circuit",
+    "backend",
   ];
 
   useEffect(() => {
     if (searchQuery.length > 0) {
-      const filtered = searchSuggestions.filter(suggestion =>
-        suggestion.toLowerCase().includes(searchQuery.toLowerCase())
+      const filtered = searchSuggestions.filter((suggestion) =>
+        suggestion.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       setSuggestions(filtered);
       setShowSuggestions(filtered.length > 0);
@@ -206,9 +254,8 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
     setShowSuggestions(false);
   };
 
-
   return (
-    <motion.header 
+    <motion.header
       className="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-700"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -217,85 +264,106 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
       <div className="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Title */}
-          <motion.div 
+          <motion.div
             className="flex items-center space-x-4"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Link to="/dashboard" className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
+            <Link
+              to="/dashboard"
+              className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+            >
               <div className="w-12 h-12 bg-gradient-to-r from-quantum-blue to-quantum-purple rounded-lg flex items-center justify-center">
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                 >
-                  <div className="w-7 h-7 text-white flex items-center justify-center">⚛️</div>
+                  <div className="w-7 h-7 text-white flex items-center justify-center">
+                    ⚛️
+                  </div>
                 </motion.div>
               </div>
               <div className="flex flex-col justify-center">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">IBM Quantum</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-tight">Jobs Dashboard</p>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
+                  IBMQuantum
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-tight">
+                  Jobs Dashboard
+                </p>
               </div>
             </Link>
           </motion.div>
 
           {/* Search and Controls */}
-          <motion.div 
+          <motion.div
             className="flex items-center space-x-4"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
             {/* Enhanced Search Bar */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-md mx-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 z-10" />
-              <Input
-                type="text"
-                placeholder="Search jobs, backends, status, keywords..."
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                onFocus={() => searchQuery.length > 0 && setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                className="pl-9 pr-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50"
-              />
-              {searchQuery && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearSearch}
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              )}
+            <form onSubmit={handleSearch} className="flex-1 max-w-md mx-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 z-10" />
+                <Input
+                  type="text"
+                  placeholder="Search jobs, backends, status, keywords..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onFocus={() =>
+                    searchQuery.length > 0 && setShowSuggestions(true)
+                  }
+                  onBlur={() =>
+                    setTimeout(() => setShowSuggestions(false), 150)
+                  }
+                  className="pl-9 pr-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50"
+                />
+                {searchQuery && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearSearch}
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
 
-              {/* Search Suggestions Dropdown */}
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 max-h-40 overflow-y-auto">
-                  {suggestions.map((suggestion, index) => (
-                    <div
-                      key={index}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm border-b border-gray-100 dark:border-gray-600 last:border-b-0"
-                    >
-                      <div className="flex items-center">
-                        <Search className="h-3 w-3 mr-2 text-gray-400" />
-                        <span className="capitalize">{suggestion}</span>
+                {/* Search Suggestions Dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 max-h-40 overflow-y-auto">
+                    {suggestions.map((suggestion, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                      >
+                        <div className="flex items-center">
+                          <Search className="h-3 w-3 mr-2 text-gray-400" />
+                          <span className="capitalize">{suggestion}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </form>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </form>
 
             {/* Auto-refresh Controls */}
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Auto-refresh:</span>
-              <Select value={refreshInterval} onValueChange={handleRefreshIntervalChange}>
-                <SelectTrigger className="w-20 h-8" data-testid="select-refresh-interval">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Auto-refresh:
+              </span>
+              <Select
+                value={refreshInterval}
+                onValueChange={handleRefreshIntervalChange}
+              >
+                <SelectTrigger
+                  className="w-20 h-8"
+                  data-testid="select-refresh-interval"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -307,7 +375,7 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
                 </SelectContent>
               </Select>
               {parseInt(refreshInterval) > 0 && (
-                <motion.div 
+                <motion.div
                   className="w-2 h-2 bg-green-500 rounded-full"
                   animate={{ opacity: [1, 0.3, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
@@ -318,27 +386,38 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
             <div className="flex items-center gap-4">
               {/* Connection Status Indicator */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className={cn("h-2 w-2 rounded-full", {
-                  "bg-green-500 animate-pulse": connectionStatus === 'connected',
-                  "bg-yellow-500 animate-pulse": connectionStatus === 'connecting',
-                  "bg-red-500": connectionStatus === 'disconnected'
-                })} />
+                <div
+                  className={cn("h-2 w-2 rounded-full", {
+                    "bg-green-500 animate-pulse":
+                      connectionStatus === "connected",
+                    "bg-yellow-500 animate-pulse":
+                      connectionStatus === "connecting",
+                    "bg-red-500": connectionStatus === "disconnected",
+                  })}
+                />
                 <span className="capitalize">{connectionStatus}</span>
-                <span className="text-xs">• Last sync: {lastSync.toLocaleTimeString()}</span>
+                <span className="text-xs">
+                  • Last sync: {lastSync.toLocaleTimeString()}
+                </span>
               </div>
 
-              <Button 
+              <Button
                 onClick={handleSync}
-                disabled={syncStatus === 'syncing'}
+                disabled={syncStatus === "syncing"}
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2"
               >
-                <RefreshCw className={cn("h-4 w-4", syncStatus === 'syncing' && "animate-spin")} />
-                {syncStatus === 'syncing' && 'Syncing...'}
-                {syncStatus === 'success' && 'Synced!'}
-                {syncStatus === 'error' && 'Error'}
-                {syncStatus === 'idle' && 'Sync IBM'}
+                <RefreshCw
+                  className={cn(
+                    "h-4 w-4",
+                    syncStatus === "syncing" && "animate-spin",
+                  )}
+                />
+                {syncStatus === "syncing" && "Syncing..."}
+                {syncStatus === "success" && "Synced!"}
+                {syncStatus === "error" && "Error"}
+                {syncStatus === "idle" && "Sync IBM"}
               </Button>
             </div>
 
@@ -364,7 +443,10 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
                 className="relative"
               >
                 <Bell className="w-5 h-5" />
-                <Badge variant="destructive" className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center text-xs">
+                <Badge
+                  variant="destructive"
+                  className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center text-xs"
+                >
                   3
                 </Badge>
               </Button>
@@ -378,23 +460,38 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-2">
-                    <p className="text-sm font-medium">{user?.name || 'User'}</p>
-                    <p className="text-xs text-gray-500">{user?.email || 'user@example.com'}</p>
+                    <p className="text-sm font-medium">
+                      {user?.name || "User"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {user?.email || "user@example.com"}
+                    </p>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-                    {theme === 'dark' ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
-                    {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                  <DropdownMenuItem
+                    onClick={() =>
+                      setTheme(theme === "dark" ? "light" : "dark")
+                    }
+                  >
+                    {theme === "dark" ? (
+                      <Sun className="w-4 h-4 mr-2" />
+                    ) : (
+                      <Moon className="w-4 h-4 mr-2" />
+                    )}
+                    {theme === "dark" ? "Light Mode" : "Dark Mode"}
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => {
-                    logout();
-                    window.location.href = '/';
-                  }} className="text-red-600 dark:text-red-400">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      logout();
+                      window.location.href = "/";
+                    }}
+                    className="text-red-600 dark:text-red-400"
+                  >
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
                   </DropdownMenuItem>
