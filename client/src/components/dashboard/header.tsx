@@ -223,18 +223,18 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Link to="/dashboard" className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
-              <div className="w-10 h-10 bg-gradient-to-r from-quantum-blue to-quantum-purple rounded-lg flex items-center justify-center">
+            <Link to="/dashboard" className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
+              <div className="w-12 h-12 bg-gradient-to-r from-quantum-blue to-quantum-purple rounded-lg flex items-center justify-center">
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                 >
-                  <div className="w-6 h-6 text-white">⚛️</div>
+                  <div className="w-7 h-7 text-white flex items-center justify-center">⚛️</div>
                 </motion.div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">IBM Quantum</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Jobs Dashboard</p>
+              <div className="flex flex-col justify-center">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">IBM Quantum</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-tight">Jobs Dashboard</p>
               </div>
             </Link>
           </motion.div>
