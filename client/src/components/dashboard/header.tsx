@@ -223,7 +223,7 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <div className="flex items-center space-x-2">
+            <Link to="/dashboard" className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
               <div className="w-10 h-10 bg-gradient-to-r from-quantum-blue to-quantum-purple rounded-lg flex items-center justify-center">
                 <motion.div
                   animate={{ rotate: 360 }}
@@ -236,7 +236,7 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">IBM Quantum</h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Jobs Dashboard</p>
               </div>
-            </div>
+            </Link>
           </motion.div>
 
           {/* Search and Controls */}
