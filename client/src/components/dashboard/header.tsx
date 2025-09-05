@@ -214,7 +214,7 @@ export function Header({ onSearch, onRefreshIntervalChange, onManualRefresh, onV
       animate={{ y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Title */}
           <motion.div 
