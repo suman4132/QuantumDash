@@ -670,6 +670,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // General AI Chat endpoint
+  app.post("/api/ai/chat", async (req, res) => {
+    try {
+      const { message } = req.body;
+      if (!message) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+      
+      const response = await openaiService.chat(message);
+      res.json({ response });
+    } catch (error) {
+      console.error("Error in AI chat:", error);
+      res.status(500).json({ error: "Failed to process chat message" });
+    }
+  });
+
   // Check AI service status
   app.get("/api/ai/status", async (req, res) => {
     try {

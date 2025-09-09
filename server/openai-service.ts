@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import type { Job, Backend } from '@shared/schema';
 
 class OpenAIQuantumService {
-  private client: OpenAI;
+  private client: OpenAI | undefined;
   private isConfigured: boolean = false;
 
   constructor() {
@@ -32,6 +32,10 @@ class OpenAIQuantumService {
     }
 
     try {
+      if (!this.client) {
+        return this.getFallbackSuggestions();
+      }
+
       const prompt = `As a quantum computing expert, analyze this quantum job configuration and provide suggestions:
 
 Qubits: ${jobData.qubits}
@@ -81,6 +85,10 @@ Format your response as JSON with keys: circuitSuggestions, optimizationTips, ba
     }
 
     try {
+      if (!this.client) {
+        return this.getFallbackFailureAnalysis();
+      }
+
       const prompt = `Analyze this failed quantum job and provide insights:
 
 Job ID: ${job.id}
@@ -129,6 +137,10 @@ Format as JSON with keys: possibleCauses, suggestions, circuitImprovements, prev
     }
 
     try {
+      if (!this.client) {
+        return this.getFallbackCircuitCode(qubits);
+      }
+
       const prompt = `Generate Qiskit quantum circuit code for: "${description}"
       
 Requirements:
@@ -203,6 +215,43 @@ Return only the Python/Qiskit code:`;
     };
   }
 
+  async chat(message: string): Promise<string> {
+    if (!this.isConfigured) {
+      return "I'm sorry, but the AI assistant is not currently available. Please check if the OpenAI API key is configured properly.";
+    }
+
+    try {
+      if (!this.client) {
+        return "I'm sorry, but the AI assistant is not currently available. Please check if the OpenAI API key is configured properly.";
+      }
+
+      const systemPrompt = `You are a helpful AI assistant specialized in quantum computing, but you can also help with general questions. You are integrated into a quantum computing dashboard that manages IBM Quantum jobs, backends, and analytics. 
+
+When users ask quantum computing questions, provide accurate, helpful information. For general questions, be helpful and conversational. Keep your responses informative but concise.
+
+Context: You're part of a quantum computing job management dashboard that tracks quantum jobs, analyzes performance, and provides insights about quantum backends and execution.`;
+
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message }
+        ],
+        max_tokens: 800,
+        temperature: 0.7,
+      });
+
+      return response.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response at the moment.";
+    } catch (error) {
+      console.error('OpenAI API error in chat:', error);
+      return "I'm experiencing some technical difficulties right now. Please try again in a moment.";
+    }
+  }
+
+  isServiceConfigured(): boolean {
+    return this.isConfigured;
+  }
+
   private getFallbackCircuitCode(qubits: number): string {
     return `from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 
@@ -221,10 +270,6 @@ for i in range(${qubits}):
 circuit.measure(qreg, creg)
 
 print(circuit)`;
-  }
-
-  isServiceConfigured(): boolean {
-    return this.isConfigured;
   }
 
   // Method to get detailed circuit improvement instructions

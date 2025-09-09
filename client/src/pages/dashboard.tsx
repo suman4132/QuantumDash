@@ -24,6 +24,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { JobStatusDistribution } from "@/components/dashboard/job-status-distribution";
 import { LiveActivityFeed } from "@/components/dashboard/live-activity-feed";
+import { AIAssistant } from "@/components/ai/ai-assistant";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -370,6 +371,9 @@ export default function Dashboard() {
           />
         )}
       </AnimatePresence>
+
+      {/* AI Assistant - floating on all dashboard views */}
+      <AIAssistant />
     </div>
   );
 }
