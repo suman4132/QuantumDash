@@ -8,6 +8,7 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { ibmQuantumService } from "./ibm-quantum";
+import { openaiService } from "./openai-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Jobs endpoints
@@ -583,6 +584,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error(`Error removing project collaborator ${req.params.id}:`, error);
       res.status(500).json({ error: "Failed to remove project collaborator" });
+    }
+  });
+
+  // ==================== AI ASSISTANT API ROUTES ====================
+  
+  // Generate job suggestions
+  app.post("/api/ai/job-suggestions", async (req, res) => {
+    try {
+      const { qubits, shots, backend, program } = req.body;
+      const suggestions = await openaiService.generateJobSuggestions({
+        qubits: parseInt(qubits),
+        shots: parseInt(shots),
+        backend,
+        program
+      });
+      res.json(suggestions);
+    } catch (error) {
+      console.error("Error generating job suggestions:", error);
+      res.status(500).json({ error: "Failed to generate AI suggestions" });
+    }
+  });
+
+  // Analyze failed job
+  app.post("/api/ai/analyze-failure/:jobId", async (req, res) => {
+    try {
+      const job = await storage.getJobById(req.params.jobId);
+      if (!job) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+      
+      if (job.status !== 'failed') {
+        return res.status(400).json({ error: "Job has not failed" });
+      }
+
+      const analysis = await openaiService.analyzeFailedJob(job);
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error analyzing failed job:", error);
+      res.status(500).json({ error: "Failed to analyze failed job" });
+    }
+  });
+
+  // Generate circuit code
+  app.post("/api/ai/generate-circuit", async (req, res) => {
+    try {
+      const { description, qubits } = req.body;
+      const circuitCode = await openaiService.generateCircuitCode(description, parseInt(qubits));
+      res.json({ circuitCode });
+    } catch (error) {
+      console.error("Error generating circuit code:", error);
+      res.status(500).json({ error: "Failed to generate circuit code" });
+    }
+  });
+
+  // Check AI service status
+  app.get("/api/ai/status", async (req, res) => {
+    try {
+      res.json({
+        configured: openaiService.isServiceConfigured(),
+        status: openaiService.isServiceConfigured() ? "✅ AI Assistant Ready" : "⚠️  OpenAI API not configured",
+        features: [
+          "Job creation suggestions",
+          "Failure analysis",
+          "Circuit code generation",
+          "Optimization recommendations"
+        ]
+      });
+    } catch (error) {
+      console.error("Error checking AI status:", error);
+      res.status(500).json({ error: "Failed to check AI status" });
     }
   });
 
