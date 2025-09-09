@@ -28,9 +28,10 @@ export function AIFailureAnalysis({ jobId, jobName, error, onRetryWithSuggestion
 
   const analyzeMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest(`/api/ai/analyze-failure/${jobId}`, {
+      const response = await fetch(`/api/ai/analyze-failure/${jobId}`, {
         method: 'POST'
       });
+      return response.json();
     },
     onSuccess: (data) => {
       setAnalysis(data);

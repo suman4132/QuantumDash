@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AIJobAssistant } from "@/components/ai/ai-job-assistant";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -60,6 +61,31 @@ export function JobForm({ onClose }: JobFormProps) {
   };
 
   const availableBackends = backends.filter(b => b.status === "available" || b.status === "busy");
+
+  // Get current form values for AI assistant
+  const watchedValues = form.watch();
+  const jobData = {
+    qubits: watchedValues.qubits || 0,
+    shots: watchedValues.shots || 0,
+    backend: watchedValues.backend || "",
+    program: watchedValues.program || ""
+  };
+
+  // Handle AI suggestions
+  const handleSuggestionApply = (suggestion: string) => {
+    toast({
+      title: "AI Suggestion",
+      description: suggestion,
+    });
+  };
+
+  const handleCircuitGenerate = (code: string) => {
+    form.setValue("program", code);
+    toast({
+      title: "Circuit Generated",
+      description: "AI-generated circuit code has been applied to your job",
+    });
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -190,6 +216,13 @@ export function JobForm({ onClose }: JobFormProps) {
                       <FormMessage />
                     </FormItem>
                   )}
+                />
+
+                {/* AI Assistant */}
+                <AIJobAssistant 
+                  jobData={jobData}
+                  onSuggestionApply={handleSuggestionApply}
+                  onCircuitGenerate={handleCircuitGenerate}
                 />
 
                 <div className="flex justify-end space-x-3 pt-4">

@@ -37,18 +37,21 @@ export function AIJobAssistant({ jobData, onSuggestionApply, onCircuitGenerate }
   // Get AI suggestions based on current job configuration
   const { data: suggestions, isLoading: loadingSuggestions, refetch } = useQuery<AISuggestions>({
     queryKey: ['/api/ai/job-suggestions', jobData],
-    queryFn: () => apiRequest('/api/ai/job-suggestions', {
-      method: 'POST',
-      body: JSON.stringify(jobData),
-      headers: { 'Content-Type': 'application/json' }
-    }),
+    queryFn: async () => {
+      const response = await fetch('/api/ai/job-suggestions', {
+        method: 'POST',
+        body: JSON.stringify(jobData),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      return response.json();
+    },
     enabled: jobData.qubits > 0 && jobData.shots > 0 && !!jobData.backend
   });
 
   // Generate circuit code mutation
   const generateCircuitMutation = useMutation({
     mutationFn: async (description: string) => {
-      const response = await apiRequest('/api/ai/generate-circuit', {
+      const response = await fetch('/api/ai/generate-circuit', {
         method: 'POST',
         body: JSON.stringify({
           description,
@@ -56,7 +59,8 @@ export function AIJobAssistant({ jobData, onSuggestionApply, onCircuitGenerate }
         }),
         headers: { 'Content-Type': 'application/json' }
       });
-      return response.circuitCode;
+      const data = await response.json();
+      return data.circuitCode;
     },
     onSuccess: (circuitCode) => {
       onCircuitGenerate(circuitCode);

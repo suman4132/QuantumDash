@@ -3,6 +3,7 @@ import { X, Calendar, Clock, Server, Hash, Tag, CheckCircle, XCircle, Play, Paus
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AIFailureAnalysis } from "@/components/ai/ai-failure-analysis";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area, ScatterChart, Scatter } from "recharts";
@@ -364,6 +365,21 @@ export function JobDetailsModal({ job, onClose }: JobDetailsModalProps) {
                         </div>
                       </div>
                     </div>
+
+                    {/* AI Failure Analysis - Only show for failed jobs */}
+                    {job.status === 'failed' && (
+                      <div className="pt-6">
+                        <AIFailureAnalysis 
+                          jobId={job.id} 
+                          jobName={job.name}
+                          error={job.error}
+                          onRetryWithSuggestion={(suggestion) => {
+                            // Handle retry with AI suggestion
+                            console.log('Retry with suggestion:', suggestion);
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
 
