@@ -126,7 +126,7 @@ const QuantumCircuit = () => {
 };
 
 // Holographic text effect component
-const HolographicText = ({ children, className = "" }) => {
+const HolographicText = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => {
   return (
     <motion.div
       className={`relative ${className}`}
@@ -234,7 +234,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white overflow-x-hidden">
-      <style jsx>{`
+      <style>{`
         .perspective-1000 {
           perspective: 1000px;
         }
