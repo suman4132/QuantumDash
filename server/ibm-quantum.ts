@@ -26,16 +26,18 @@ interface IBMQuantumBackend {
 }
 
 class IBMQuantumService {
-  private apiToken: string;
+  private apiKey: string;
   private baseUrl: string;
   private runtimeUrl: string;
+  private bearerToken: string | null = null;
+  private tokenExpiry: number = 0;
 
   constructor() {
-    this.apiToken = process.env.IBM_QUANTUM_API_TOKEN || '';
+    this.apiKey = process.env.IBM_QUANTUM_API_TOKEN || '';
     this.baseUrl = 'https://quantum.cloud.ibm.com/api/v1'; // Updated to 2025 API endpoints
     this.runtimeUrl = 'https://quantum.cloud.ibm.com/api/v1'; // Updated to 2025 API endpoints
 
-    if (!this.apiToken) {
+    if (!this.apiKey) {
       console.warn('⚠️  IBM Quantum API token not found in environment variables');
       console.warn('Please add IBM_QUANTUM_API_TOKEN to your .env file');
       console.warn('Using simulated data for demonstration');
@@ -45,20 +47,54 @@ class IBMQuantumService {
     }
   }
 
-  private async makeAuthenticatedRequest(url: string, method: 'GET' | 'POST' = 'GET', data?: any) {
-    if (!this.apiToken) {
-      throw new Error('IBM Quantum API token not configured');
+  private async getBearerToken(): Promise<string> {
+    // If we have a valid token, return it
+    if (this.bearerToken && Date.now() < this.tokenExpiry) {
+      return this.bearerToken;
     }
 
-    // Updated headers for 2025 IBM Quantum API
-    const headers = {
-      'Authorization': `Bearer ${this.apiToken}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'User-Agent': 'Quantum-Dashboard/1.0'
-    };
+    try {
+      console.log('🔑 Generating IBM Cloud Bearer token...');
+      const response = await axios.post('https://iam.cloud.ibm.com/identity/token', 
+        `grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=${this.apiKey}`,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      this.bearerToken = response.data.access_token;
+      // Set expiry to 50 minutes (tokens typically last 60 minutes)
+      this.tokenExpiry = Date.now() + (50 * 60 * 1000);
+      
+      console.log('✅ Successfully generated Bearer token');
+      return this.bearerToken;
+    } catch (error: any) {
+      console.error('❌ Failed to generate Bearer token:', error.response?.data || error.message);
+      throw new Error('Failed to authenticate with IBM Cloud');
+    }
+  }
+
+  private async makeAuthenticatedRequest(url: string, method: 'GET' | 'POST' = 'GET', data?: any) {
+    if (!this.apiKey) {
+      throw new Error('IBM Quantum API key not configured');
+    }
 
     try {
+      // Get valid Bearer token
+      const bearerToken = await this.getBearerToken();
+      
+      // Updated headers for 2025 IBM Quantum API
+      const headers = {
+        'Authorization': `Bearer ${bearerToken}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'Quantum-Dashboard/1.0'
+        // Note: Service-CRN header may be required for some endpoints
+        // but is not needed for basic backend/job listing
+      };
       console.log(`🌐 Making request to: ${url}`);
       const response = await axios({
         method,
@@ -94,8 +130,8 @@ class IBMQuantumService {
   }
 
   async getJobs(limit: number = 50): Promise<IBMQuantumJob[]> {
-    if (!this.apiToken) {
-      console.warn('API token not available. Returning simulated jobs.');
+    if (!this.apiKey) {
+      console.warn('API key not available. Returning simulated jobs.');
       return this.generateSampleJobs(limit);
     }
 
@@ -171,8 +207,8 @@ class IBMQuantumService {
   }
 
   async getBackends(): Promise<IBMQuantumBackend[]> {
-    if (!this.apiToken) {
-      console.warn('API token not available. Returning simulated backends.');
+    if (!this.apiKey) {
+      console.warn('API key not available. Returning simulated backends.');
       return this.generateSampleBackends();
     }
 
