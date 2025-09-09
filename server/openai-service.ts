@@ -225,11 +225,17 @@ Return only the Python/Qiskit code:`;
         return "I'm sorry, but the AI assistant is not currently available. Please check if the OpenAI API key is configured properly.";
       }
 
-      const systemPrompt = `You are a helpful AI assistant specialized in quantum computing, but you can also help with general questions. You are integrated into a quantum computing dashboard that manages IBM Quantum jobs, backends, and analytics. 
+      const systemPrompt = `You are a helpful and knowledgeable AI assistant. Give clear, direct answers to user questions.
 
-When users ask quantum computing questions, provide accurate, helpful information. For general questions, be helpful and conversational. Keep your responses informative but concise.
+Key guidelines:
+- Answer questions directly and concisely
+- Be helpful and informative 
+- If asked about quantum computing, provide accurate technical information
+- If asked about the dashboard, explain features and functionality
+- For general questions, give straightforward, useful responses
+- Keep answers focused and to the point
 
-Context: You're part of a quantum computing job management dashboard that tracks quantum jobs, analyzes performance, and provides insights about quantum backends and execution.`;
+You are integrated into a quantum computing job management dashboard that tracks IBM Quantum jobs, backends, and analytics. You can help users understand quantum computing concepts, explain dashboard features, or answer any other questions they have.`;
 
       const response = await this.client.chat.completions.create({
         model: 'gpt-4o-mini',
