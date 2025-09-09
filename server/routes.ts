@@ -673,12 +673,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // General AI Chat endpoint
   app.post("/api/ai/chat", async (req, res) => {
     try {
+      console.log("AI Chat endpoint hit with body:", req.body);
       const { message } = req.body;
       if (!message) {
+        console.log("No message provided");
         return res.status(400).json({ error: "Message is required" });
       }
       
+      console.log("Calling OpenAI service with message:", message);
       const response = await openaiService.chat(message);
+      console.log("OpenAI service responded:", response);
       res.json({ response });
     } catch (error) {
       console.error("Error in AI chat:", error);
