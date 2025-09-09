@@ -49,8 +49,8 @@ export function AIAssistant({ className = "" }: AIAssistantProps) {
 
   const chatMutation = useMutation({
     mutationFn: async (message: string) => {
-      const response = await apiRequest("/api/ai/chat", "POST", { message });
-      return response;
+      const response = await apiRequest("POST", "/api/ai/chat", { message });
+      return await response.json();
     },
     onSuccess: (data: any) => {
       const aiMessage: Message = {
