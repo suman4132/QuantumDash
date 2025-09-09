@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Bot, Lightbulb, Wrench, Shield, RefreshCw, ChevronRight } from 'lucide-react';
+import { AlertTriangle, Bot, Lightbulb, Wrench, Shield, RefreshCw, ChevronRight, BookOpen, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +25,8 @@ interface AIFailureAnalysisProps {
 
 export function AIFailureAnalysis({ jobId, jobName, error, onRetryWithSuggestion }: AIFailureAnalysisProps) {
   const [analysis, setAnalysis] = useState<FailureAnalysis | null>(null);
+  const [showDetailedInstructions, setShowDetailedInstructions] = useState(false);
+  const [detailedInstructions, setDetailedInstructions] = useState<string>('');
 
   const analyzeMutation = useMutation({
     mutationFn: async () => {
@@ -41,6 +43,40 @@ export function AIFailureAnalysis({ jobId, jobName, error, onRetryWithSuggestion
   const handleAnalyze = () => {
     analyzeMutation.mutate();
   };
+
+  // Get circuit improvement instructions
+  const getCircuitInstructionsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/ai/circuit-instructions/${jobId}`, {
+        method: 'POST'
+      });
+      const data = await response.json();
+      return data.instructions;
+    },
+    onSuccess: (instructions) => {
+      setDetailedInstructions(instructions);
+      setShowDetailedInstructions(true);
+    }
+  });
+
+  // Get guided circuit improvements
+  const getGuidedImprovementsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/ai/guided-improvements/${jobId}`, {
+        method: 'POST'
+      });
+      return response.json();
+    },
+    onSuccess: (improvements) => {
+      // Apply guided improvements to the current analysis
+      if (analysis && improvements) {
+        setAnalysis({
+          ...analysis,
+          circuitImprovements: [...analysis.circuitImprovements, ...improvements]
+        });
+      }
+    }
+  });
 
   return (
     <Card className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-red-200 dark:border-red-700">
@@ -155,10 +191,37 @@ export function AIFailureAnalysis({ jobId, jobName, error, onRetryWithSuggestion
             {/* Circuit Improvements */}
             {analysis.circuitImprovements.length > 0 && (
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Wrench className="w-4 h-4 text-blue-500" />
-                  <h4 className="font-semibold text-sm">Circuit Improvements</h4>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Wrench className="w-4 h-4 text-blue-500" />
+                    <h4 className="font-semibold text-sm">Circuit Improvements</h4>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => getCircuitInstructionsMutation.mutate()}
+                      disabled={getCircuitInstructionsMutation.isPending}
+                      className="text-xs px-3 py-1 h-7"
+                      data-testid="button-circuit-instructions"
+                    >
+                      <BookOpen className="w-3 h-3 mr-1" />
+                      {getCircuitInstructionsMutation.isPending ? 'Loading...' : 'Get Instructions'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => getGuidedImprovementsMutation.mutate()}
+                      disabled={getGuidedImprovementsMutation.isPending}
+                      className="text-xs px-3 py-1 h-7"
+                      data-testid="button-guided-improvements"
+                    >
+                      <Zap className="w-3 h-3 mr-1" />
+                      {getGuidedImprovementsMutation.isPending ? 'Loading...' : 'Get AI Guide'}
+                    </Button>
+                  </div>
                 </div>
+                
                 <div className="space-y-2">
                   {analysis.circuitImprovements.map((improvement, index) => (
                     <motion.div
@@ -173,6 +236,35 @@ export function AIFailureAnalysis({ jobId, jobName, error, onRetryWithSuggestion
                     </motion.div>
                   ))}
                 </div>
+
+                {/* Detailed Instructions Panel */}
+                {showDetailedInstructions && detailedInstructions && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-700"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <BookOpen className="w-4 h-4 text-blue-600" />
+                      <h5 className="font-semibold text-sm text-blue-800 dark:text-blue-200">
+                        Detailed Circuit Instructions
+                      </h5>
+                    </div>
+                    <div className="text-sm text-blue-900 dark:text-blue-100 whitespace-pre-wrap">
+                      {detailedInstructions}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowDetailedInstructions(false)}
+                      className="mt-3 text-xs"
+                      data-testid="button-hide-instructions"
+                    >
+                      Hide Instructions
+                    </Button>
+                  </motion.div>
+                )}
               </div>
             )}
 

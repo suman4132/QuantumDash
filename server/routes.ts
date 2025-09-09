@@ -626,6 +626,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get circuit improvement instructions
+  app.post("/api/ai/circuit-instructions/:jobId", async (req, res) => {
+    try {
+      const job = await storage.getJobById(req.params.jobId);
+      if (!job) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+
+      const instructions = await openaiService.getCircuitInstructions(job);
+      res.json({ instructions });
+    } catch (error) {
+      console.error("Error getting circuit instructions:", error);
+      res.status(500).json({ error: "Failed to get circuit instructions" });
+    }
+  });
+
+  // Get guided improvements
+  app.post("/api/ai/guided-improvements/:jobId", async (req, res) => {
+    try {
+      const job = await storage.getJobById(req.params.jobId);
+      if (!job) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+
+      const improvements = await openaiService.getGuidedImprovements(job);
+      res.json(improvements);
+    } catch (error) {
+      console.error("Error getting guided improvements:", error);
+      res.status(500).json({ error: "Failed to get guided improvements" });
+    }
+  });
+
   // Generate circuit code
   app.post("/api/ai/generate-circuit", async (req, res) => {
     try {

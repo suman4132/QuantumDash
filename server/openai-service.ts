@@ -226,6 +226,148 @@ print(circuit)`;
   isServiceConfigured(): boolean {
     return this.isConfigured;
   }
+
+  // Method to get detailed circuit improvement instructions
+  async getCircuitInstructions(job: Job): Promise<string> {
+    if (!this.isConfigured) {
+      return `
+AI Circuit Improvement Instructions for "${job.name}":
+
+Based on your quantum job configuration:
+- Qubits: ${job.qubits}
+- Shots: ${job.shots}
+- Backend: ${job.backend}
+
+Here are detailed circuit improvement instructions:
+
+1. Circuit Depth Optimization:
+   • Reduce gate depth by combining consecutive gates
+   • Use native gate sets for your target hardware
+   • Replace multi-qubit gates with hardware-efficient alternatives
+
+2. Error Mitigation Strategies:
+   • Implement dynamical decoupling sequences
+   • Use error correction codes for critical qubits
+   • Add redundancy for error-prone operations
+
+3. Noise-Resilient Design:
+   • Choose qubit mappings that minimize crosstalk
+   • Implement variational quantum algorithms with noise robustness
+   • Use short coherence gates and minimize idle times
+
+4. Hardware-Specific Optimizations:
+   • Optimize for ${job.backend} connectivity graph
+   • Use native gate implementations
+   • Account for specific error rates and calibration data
+
+5. Measurement Strategies:
+   • Use tomography for complete state characterization
+   • Implement partial measurements for reduced readout error
+   • Consider ancilla-assisted measurements for error detection
+
+Apply these techniques systematically to improve your quantum circuit performance.
+      `;
+    }
+
+    try {
+      const prompt = `Provide detailed circuit improvement instructions for this quantum job:
+
+Job: ${job.name}
+Qubits: ${job.qubits}
+Shots: ${job.shots}
+Backend: ${job.backend}
+Program: ${job.program?.substring(0, 200) || 'Not provided'}...
+Status: ${job.status}
+Error: ${job.error || 'None'}
+
+Please provide comprehensive, actionable instructions on:
+1. Circuit optimization techniques
+2. Error mitigation strategies  
+3. Hardware-specific improvements
+4. Noise reduction methods
+5. Measurement optimization
+
+Make it practical and specific to this configuration.`;
+
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a quantum computing expert. Provide detailed, step-by-step instructions for improving quantum circuits. Focus on practical, implementable recommendations.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 800,
+        temperature: 0.7
+      });
+
+      return response.choices[0].message.content || 'Unable to generate instructions';
+    } catch (error) {
+      console.error('Error getting circuit instructions:', error);
+      return 'Unable to generate AI-powered circuit instructions at this time.';
+    }
+  }
+
+  // Method to get guided circuit improvements
+  async getGuidedImprovements(job: Job): Promise<string[]> {
+    if (!this.isConfigured) {
+      return [
+        `Apply quantum error correction codes for ${job.qubits}-qubit systems`,
+        `Implement dynamical decoupling on ${job.backend} hardware`,
+        `Use variational quantum algorithms optimized for ${job.shots} shots`,
+        'Optimize gate scheduling to minimize decoherence',
+        'Add measurement error mitigation techniques'
+      ];
+    }
+
+    try {
+      const prompt = `Generate guided improvements for this quantum job:
+
+Job: ${job.name}
+Configuration: ${job.qubits} qubits, ${job.shots} shots on ${job.backend}
+Current Status: ${job.status}
+Program: ${job.program?.substring(0, 150) || 'Not provided'}
+
+Provide 4-6 specific improvement suggestions as a JSON array. Focus on:
+- Circuit optimization techniques
+- Hardware-specific improvements
+- Error mitigation methods
+- Performance enhancements
+
+Return format: ["improvement 1", "improvement 2", ...]`;
+
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a quantum computing optimization expert. Provide specific, actionable improvements for quantum circuits. Return only a JSON array of improvement suggestions.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 400,
+        temperature: 0.8
+      });
+
+      const content = response.choices[0].message.content;
+      try {
+        return JSON.parse(content || '[]');
+      } catch {
+        // If JSON parsing fails, split the response into lines
+        return content?.split('\n').filter(line => line.trim().length > 0) || [];
+      }
+    } catch (error) {
+      console.error('Error getting guided improvements:', error);
+      return ['Unable to generate AI-powered guided improvements at this time.'];
+    }
+  }
 }
 
 export const openaiService = new OpenAIQuantumService();
