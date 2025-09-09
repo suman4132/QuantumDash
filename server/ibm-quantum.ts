@@ -32,8 +32,8 @@ class IBMQuantumService {
 
   constructor() {
     this.apiToken = process.env.IBM_QUANTUM_API_TOKEN || '';
-    this.baseUrl = 'https://runtime.quantum-computing.ibm.com'; // This seems to be the primary base URL for runtime operations
-    this.runtimeUrl = 'https://runtime.quantum-computing.ibm.com'; // Redundant but kept for consistency with original code
+    this.baseUrl = 'https://quantum.cloud.ibm.com/api/v1'; // Updated to 2025 API endpoints
+    this.runtimeUrl = 'https://quantum.cloud.ibm.com/api/v1'; // Updated to 2025 API endpoints
 
     if (!this.apiToken) {
       console.warn('⚠️  IBM Quantum API token not found in environment variables');
@@ -41,7 +41,7 @@ class IBMQuantumService {
       console.warn('Using simulated data for demonstration');
     } else {
       console.log('✅ IBM Quantum API configured successfully');
-      console.log(`🔗 Runtime URL: ${this.runtimeUrl}`);
+      console.log(`🔗 Base URL: ${this.baseUrl}`);
     }
   }
 
@@ -50,6 +50,7 @@ class IBMQuantumService {
       throw new Error('IBM Quantum API token not configured');
     }
 
+    // Updated headers for 2025 IBM Quantum API
     const headers = {
       'Authorization': `Bearer ${this.apiToken}`,
       'Content-Type': 'application/json',
@@ -101,11 +102,11 @@ class IBMQuantumService {
     try {
       console.log(`📊 Fetching ${limit} jobs from IBM Quantum...`);
 
-      // Attempting to use the most reliable endpoint first, then fallback
+      // Updated endpoints for 2025 IBM Quantum API
       const endpoints = [
-        `${this.runtimeUrl}/jobs?limit=${limit}&sort=created&order=desc`, // Common runtime endpoint
-        `${this.baseUrl}/jobs?limit=${limit}&sort=created&order=desc`, // Alternative base URL endpoint
-        `https://api.quantum.ibm.com/v1/jobs?limit=${limit}&sort=created&order=desc` // Older API endpoint
+        `${this.baseUrl}/jobs?limit=${limit}`, // Primary 2025 endpoint
+        `${this.baseUrl}/jobs`, // Fallback without parameters
+        `https://us-east.quantum-computing.cloud.ibm.com/api/v1/jobs?limit=${limit}` // Legacy fallback
       ];
 
       let data: any = null;
@@ -179,9 +180,9 @@ class IBMQuantumService {
       console.log('🖥️  Fetching backends from IBM Quantum...');
 
       const endpoints = [
-        `${this.runtimeUrl}/backends`,
-        `${this.baseUrl}/backends`,
-        `https://api.quantum.ibm.com/v1/backends`
+        `${this.baseUrl}/backends`, // Primary 2025 endpoint
+        `https://us-east.quantum-computing.cloud.ibm.com/api/v1/backends`, // Legacy fallback
+        `https://cloud.ibm.com/apidocs/quantum-computing/backends` // Alternative endpoint
       ];
 
       let data: any = null;
