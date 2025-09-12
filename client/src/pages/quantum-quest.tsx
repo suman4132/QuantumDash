@@ -108,6 +108,16 @@ const mockLevels: Level[] = [
     category: "Quantum Algorithms"
   },
   {
+    id: "qr-501",
+    title: "Quantum Teleportation Protocol",
+    description: "Execute a real quantum teleportation circuit on IBM Quantum hardware",
+    difficulty: "research",
+    points: 500,
+    completed: false,
+    locked: false,
+    category: "Quantum Research"
+  },
+  {
     id: "qr-401",
     title: "Quantum Optimization Challenge",
     description: "Solve a real-world optimization problem using quantum algorithms",
@@ -177,6 +187,7 @@ export default function QuantumQuest() {
   const [currentChallenge, setCurrentChallenge] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [userProgress, setUserProgress] = useState(mockUserProgress);
+  const [levels, setLevels] = useState(mockLevels);
   const { toast } = useToast();
 
   // Level completion handler
@@ -197,15 +208,16 @@ export default function QuantumQuest() {
       streak: prev.streak + 1
     }));
     
-    // Mark level as completed
-    const updatedLevels = mockLevels.map(l => 
+    // Mark level as completed and update state
+    const updatedLevels = levels.map(l => 
       l.id === level.id ? { ...l, completed: true } : l
     );
+    setLevels(updatedLevels);
   };
 
   // Challenge completion handler
   const handleChallengeComplete = (levelId: string, success: boolean, timeElapsed: number) => {
-    const level = mockLevels.find(l => l.id === levelId);
+    const level = levels.find(l => l.id === levelId);
     if (level && success) {
       completeLevel(level);
     }
@@ -352,7 +364,7 @@ export default function QuantumQuest() {
           {/* Learning Challenges */}
           <TabsContent value="learn" className="space-y-8">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockLevels.map((level, index) => (
+              {levels.map((level, index) => (
                 <motion.div
                   key={level.id}
                   initial={{ opacity: 0, y: 20 }}

@@ -14,6 +14,7 @@ import {
   Trophy
 } from "lucide-react";
 import { GateSimulator } from "./gate-simulator";
+import { QuantumJobIntegration } from "./quantum-job-integration";
 import { useToast } from "@/hooks/use-toast";
 
 // Enhanced challenge types
@@ -138,6 +139,143 @@ const LEVEL_CHALLENGES: Record<string, LevelChallenge> = {
         "Start with Hadamard on the control qubit",
         "Then add CNOT to create entanglement",
         "Bell states are maximally entangled"
+      ]
+    }
+  },
+  "qr-501": {
+    id: "qr-501",
+    title: "Quantum Teleportation Protocol",
+    description: "Execute a real quantum teleportation circuit on IBM Quantum hardware",
+    difficulty: "research",
+    points: 500,
+    timeLimit: 1800, // 30 minutes
+    category: "Quantum Research",
+    learningObjectives: [
+      "Implement quantum teleportation protocol",
+      "Execute circuits on real quantum hardware",
+      "Understand quantum measurement and state transfer"
+    ],
+    challenge: {
+      type: 'research-project',
+      instructions: "Build and execute a quantum teleportation circuit. Create Bell pair entanglement, perform measurements, and apply conditional operations to teleport a qubit state. This will run on real IBM Quantum hardware!",
+      targetState: "Teleported |ψ⟩ state",
+      initialGates: [],
+      solution: [],
+      maxMoves: 0,
+      hints: [
+        "Start by creating a Bell pair between qubits 1 and 2",
+        "Entangle the input qubit (0) with qubit 1 using CNOT", 
+        "Measure qubits 0 and 1 to collapse the entangled state",
+        "Apply X and Z gates conditionally based on measurement results"
+      ]
+    }
+  },
+  "qg-202": {
+    id: "qg-202",
+    title: "Entanglement Circuits", 
+    description: "Create entangled states using CNOT gates and measure correlations",
+    difficulty: "intermediate",
+    points: 250,
+    timeLimit: 1200, // 20 minutes
+    category: "Quantum Gates",
+    learningObjectives: [
+      "Master CNOT gate operations",
+      "Create entangled two-qubit states",
+      "Measure quantum correlations"
+    ],
+    challenge: {
+      type: 'gate-builder',
+      instructions: "Build a circuit that creates a |01⟩ + |10⟩ entangled state. Start with a Hadamard on qubit 1, then apply X to qubit 0, then CNOT with qubit 1 as control.",
+      targetState: "|Ψ−⟩ = (|01⟩ - |10⟩)/√2",
+      initialGates: [
+        {
+          id: "hadamard",
+          name: "Hadamard", 
+          symbol: "H",
+          color: "bg-blue-500",
+          description: "Creates superposition"
+        },
+        {
+          id: "x",
+          name: "Pauli-X",
+          symbol: "X",
+          color: "bg-red-500",
+          description: "Bit flip gate"
+        },
+        {
+          id: "cnot",
+          name: "CNOT",
+          symbol: "⊕", 
+          color: "bg-purple-500",
+          description: "Controlled-NOT gate"
+        }
+      ],
+      solution: [
+        { qubit: 0, position: 0, gateId: "x" },
+        { qubit: 1, position: 0, gateId: "hadamard" },
+        { qubit: 1, position: 1, gateId: "cnot" }
+      ],
+      maxMoves: 3,
+      hints: [
+        "Start by flipping qubit 0 with X gate",
+        "Apply Hadamard to qubit 1 to create superposition",
+        "Use CNOT to create entanglement"
+      ]
+    }
+  },
+  "qa-301": {
+    id: "qa-301",
+    title: "Bell State Analysis",
+    description: "Run real Bell state circuits on IBM Quantum hardware",
+    difficulty: "advanced",
+    points: 400,
+    timeLimit: 2400, // 40 minutes
+    category: "Quantum Algorithms",
+    learningObjectives: [
+      "Implement Bell state preparation",
+      "Execute algorithms on quantum hardware",
+      "Analyze quantum measurement statistics"
+    ],
+    challenge: {
+      type: 'algorithm-implementation',
+      instructions: "Implement and execute a Bell state preparation algorithm on real IBM Quantum hardware. Prepare the |Φ+⟩ Bell state and analyze the measurement results to verify entanglement.",
+      targetState: "Bell state |Φ+⟩ = (|00⟩ + |11⟩)/√2",
+      initialGates: [],
+      solution: [],
+      maxMoves: 0,
+      hints: [
+        "Use Hadamard gate on control qubit",
+        "Apply CNOT gate to create entanglement",
+        "Measure both qubits simultaneously",
+        "Check for 50/50 correlation in |00⟩ and |11⟩ states"
+      ]
+    }
+  },
+  "qr-401": {
+    id: "qr-401",
+    title: "Quantum Optimization Challenge",
+    description: "Solve a real-world optimization problem using quantum algorithms",
+    difficulty: "research",
+    points: 600,
+    timeLimit: 3600, // 60 minutes
+    category: "Research Challenges",
+    learningObjectives: [
+      "Apply QAOA for optimization problems",
+      "Use variational quantum algorithms",
+      "Solve MaxCut problems on quantum hardware"
+    ],
+    challenge: {
+      type: 'research-project',
+      instructions: "Implement and optimize a Quantum Approximate Optimization Algorithm (QAOA) to solve a 3-node MaxCut problem. This advanced challenge runs on real quantum hardware and requires optimization of variational parameters.",
+      targetState: "Optimal MaxCut solution",
+      initialGates: [],
+      solution: [],
+      maxMoves: 0,
+      hints: [
+        "Start with equal superposition using Hadamard gates",
+        "Apply problem Hamiltonian with ZZ interactions",
+        "Implement mixer Hamiltonian with X rotations",
+        "Optimize beta and gamma parameters iteratively"
       ]
     }
   }
@@ -335,6 +473,22 @@ export function LevelChallenge({ levelId, onComplete, onBack }: LevelChallengePr
                 maxMoves: challenge.challenge.maxMoves
               }}
               onComplete={handleChallengeComplete}
+            />
+          )}
+          
+          {(challenge.challenge.type === 'research-project' || challenge.challenge.type === 'algorithm-implementation') && (
+            <QuantumJobIntegration
+              levelId={challenge.id}
+              expectedResult={challenge.challenge.targetState || "Bell state"}
+              onJobComplete={(success, result) => {
+                if (success) {
+                  toast({
+                    title: "🎉 Quantum Execution Complete!",
+                    description: `Successfully executed ${challenge.title} on quantum hardware!`,
+                  });
+                }
+                handleChallengeComplete(success);
+              }}
             />
           )}
         </motion.div>
