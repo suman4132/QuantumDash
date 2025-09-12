@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { LevelChallenge } from "@/components/quantum/level-challenges";
 
 // Types for the learning system
 interface Level {
@@ -173,6 +174,7 @@ const mockLeaderboard = [
 export default function QuantumQuest() {
   const [selectedTab, setSelectedTab] = useState("learn");
   const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
+  const [currentChallenge, setCurrentChallenge] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [userProgress, setUserProgress] = useState(mockUserProgress);
   const { toast } = useToast();
@@ -194,6 +196,26 @@ export default function QuantumQuest() {
       completedLevels: prev.completedLevels + 1,
       streak: prev.streak + 1
     }));
+    
+    // Mark level as completed
+    const updatedLevels = mockLevels.map(l => 
+      l.id === level.id ? { ...l, completed: true } : l
+    );
+  };
+
+  // Challenge completion handler
+  const handleChallengeComplete = (levelId: string, success: boolean, timeElapsed: number) => {
+    const level = mockLevels.find(l => l.id === levelId);
+    if (level && success) {
+      completeLevel(level);
+    }
+    setCurrentChallenge(null);
+  };
+
+  const handleStartChallenge = (level: Level) => {
+    if (!level.locked) {
+      setCurrentChallenge(level.id);
+    }
   };
 
   const getDifficultyColor = (difficulty: Level['difficulty']) => {
@@ -364,7 +386,7 @@ export default function QuantumQuest() {
                         <Button 
                           size="sm"
                           disabled={level.locked}
-                          onClick={() => setSelectedLevel(level)}
+                          onClick={() => handleStartChallenge(level)}
                           className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                           data-testid={`button-level-${level.id}`}
                         >
@@ -526,54 +548,20 @@ export default function QuantumQuest() {
           </TabsContent>
         </Tabs>
 
-        {/* Level Detail Modal */}
+        {/* Level Challenge View */}
         <AnimatePresence>
-          {selectedLevel && (
+          {currentChallenge && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-              onClick={() => setSelectedLevel(null)}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed inset-0 bg-white dark:bg-gray-900 z-50 overflow-y-auto"
             >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <h3 className="text-xl font-bold mb-3">{selectedLevel.title}</h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  {selectedLevel.description}
-                </p>
-                <div className="flex items-center gap-4 mb-6">
-                  <Badge className={`${getDifficultyColor(selectedLevel.difficulty)} text-white`}>
-                    {selectedLevel.difficulty.toUpperCase()}
-                  </Badge>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 text-yellow-500" />
-                    <span>{selectedLevel.points} points</span>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => {
-                      setSelectedLevel(null);
-                      if (!selectedLevel.completed) {
-                        completeLevel(selectedLevel);
-                      }
-                    }}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                    data-testid={`button-start-${selectedLevel.id}`}
-                  >
-                    {selectedLevel.completed ? 'Replay Challenge' : 'Start Challenge'}
-                  </Button>
-                  <Button variant="outline" onClick={() => setSelectedLevel(null)}>
-                    Cancel
-                  </Button>
-                </div>
-              </motion.div>
+              <LevelChallenge
+                levelId={currentChallenge}
+                onComplete={handleChallengeComplete}
+                onBack={() => setCurrentChallenge(null)}
+              />
             </motion.div>
           )}
         </AnimatePresence>
