@@ -1,0 +1,52 @@
+Extend the IBM Quantum Jobs Dashboard with an advanced gamified learning module called "Quantum Quest". The goal is to teach beginners quantum computing concepts interactively while tying progress directly into the live IBM Quantum job monitoring system.
+
+Core Features:
+
+1. Levels System (Progressive Difficulty & Adaptive Learning):
+   - Beginner: Visual drag-and-drop gate simulator (Hadamard, Pauli-X, CNOT).
+   - Intermediate: Interactive circuit challenges (superposition, entanglement, Bell states).
+   - Advanced: Run circuits on real IBM Quantum backends, fetch job results, and provide adaptive hints if the user fails.
+   - Research Challenges: Open-ended real-world problems (quantum optimization, cryptography, chemistry simulation). Encourage creativity with sandbox-style levels.
+
+2. Scoring, Badges & Gamification:
+   - Award points for completing levels, accuracy of results, and efficiency in solving problems.
+   - Unlock achievements/badges: “Quantum Beginner”, “Entanglement Explorer”, “Qubit Master”, “Research Pioneer”.
+   - Maintain streak bonuses for consistent learning and gameplay.
+   - Dynamic leaderboard with animated score updates, progress animations, and confetti particle effects when ranks change.
+
+3. UI/UX & Interactivity:
+   - Integrate seamlessly within the existing IBM Quantum dashboard layout.
+   - Responsive card-based design for levels, with hover/flip animations (Framer Motion).
+   - Animated transitions between levels, celebratory animations on success (confetti, glowing effects).
+   - Progress tracker with Recharts (animated bar/line chart showing user growth over time).
+   - Dark/Light theme toggle for accessibility.
+
+4. Dashboard Integration:
+   - Each completed challenge submits a job (real or simulated) that appears in the job monitoring table.
+   - Link gameplay actions to IBM Quantum APIs (e.g., a solved entanglement puzzle generates a real 2-qubit entanglement job).
+   - Job results automatically feed back into the game (success/failure indicators, explanations, adaptive feedback).
+   - Allow users to replay levels with different backends and compare performance.
+
+5. Advanced Features for Engagement:
+   - Adaptive difficulty: dynamically adjust level complexity based on player performance.
+   - Narrative mode: guide the user as a “Quantum Explorer” solving cosmic-scale problems step by step.
+   - Sandbox mode: let learners design and submit their own circuits with scoring based on creativity/efficiency.
+   - Global leaderboard and community challenges with seasonal resets.
+   - API-ready hooks to save user progress and share badges across accounts.
+
+Tech Stack:
+- React + TailwindCSS for responsive, modern UI.
+- Framer Motion for smooth animations and transitions.
+- Recharts for animated progress and scoring visualizations.
+- React Query for real-time API polling (jobs + leaderboard).
+- Mock data for testing, with integration hooks for IBM Quantum REST API & Qiskit Runtime.
+
+Deliverables:
+- Modular React components for levels, drag-and-drop gate builder, progress tracker, leaderboard, badges, and job-to-game integration.
+- Example beginner challenge (Hadamard drag-and-drop) and intermediate challenge (entanglement circuit quiz).
+- Animated leaderboard with confetti effects and smooth rank transitions.
+- Integration example showing how a completed level automatically submits a job and reflects results in both the dashboard and game.
+- Documentation explaining how to extend the system with new challenges, research missions, and community events.
+
+Design Goal:
+Make the Quantum Quest module feel like a professional, immersive learning game—blending real-world quantum computing practice with gamified, animated, and engaging mechanics.

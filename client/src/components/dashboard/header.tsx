@@ -452,10 +452,7 @@ export function Header({
                   className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
                   data-testid="button-play-learn"
                   onClick={() => {
-                    toast({
-                      title: "Play and Learn",
-                      description: "Interactive quantum computing tutorials coming soon!",
-                    });
+                    window.location.href = "/quantum-quest";
                   }}
                 >
                   <motion.div
