@@ -27,6 +27,9 @@ interface IBMQuantumBackend {
 
 class IBMQuantumService {
   private apiKey: string;
+  private region: string;
+  private projectId: string;
+  private instanceId: string;
   private baseUrl: string;
   private runtimeUrl: string;
   private bearerToken: string | null = null;
@@ -34,16 +37,31 @@ class IBMQuantumService {
 
   constructor() {
     this.apiKey = process.env.IBM_QUANTUM_API_TOKEN || '';
-    this.baseUrl = 'https://quantum.cloud.ibm.com/api/v1'; // Updated to 2025 API endpoints
-    this.runtimeUrl = 'https://quantum.cloud.ibm.com/api/v1'; // Updated to 2025 API endpoints
+    this.region = process.env.IBM_QUANTUM_REGION || 'us-east';
+    this.projectId = process.env.IBM_QUANTUM_PROJECT_ID || '';
+    this.instanceId = process.env.IBM_QUANTUM_INSTANCE_ID || '';
+    
+    // Use region-specific Qiskit Runtime endpoints
+    this.baseUrl = `https://${this.region}.quantum-computing.cloud.ibm.com/runtime`;
+    this.runtimeUrl = this.baseUrl;
 
     if (!this.apiKey) {
       console.warn('⚠️  IBM Quantum API token not found in environment variables');
       console.warn('Please add IBM_QUANTUM_API_TOKEN to your .env file');
       console.warn('Using simulated data for demonstration');
+    } else if (!this.projectId) {
+      console.warn('⚠️  IBM Quantum Project ID not found in environment variables');
+      console.warn('Please add IBM_QUANTUM_PROJECT_ID to your .env file');
+      console.warn('Project ID is required for Qiskit Runtime API access');
+    } else if (!this.instanceId) {
+      console.warn('⚠️  IBM Quantum Instance ID not found in environment variables');
+      console.warn('Please add IBM_QUANTUM_INSTANCE_ID to your .env file');
+      console.warn('Instance ID is required for proper authentication');
     } else {
       console.log('✅ IBM Quantum API configured successfully');
       console.log(`🔗 Base URL: ${this.baseUrl}`);
+      console.log(`🏷️  Project ID: ${this.projectId}`);
+      console.log(`🌍 Region: ${this.region}`);
     }
   }
 
@@ -86,15 +104,23 @@ class IBMQuantumService {
       // Get valid Bearer token
       const bearerToken = await this.getBearerToken();
       
-      // Updated headers for 2025 IBM Quantum API
-      const headers = {
+      // Required headers for 2025 Qiskit Runtime API
+      const headers: any = {
         'Authorization': `Bearer ${bearerToken}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'User-Agent': 'Quantum-Dashboard/1.0'
-        // Note: Service-CRN header may be required for some endpoints
-        // but is not needed for basic backend/job listing
       };
+      
+      // Add project-specific headers when available
+      if (this.projectId) {
+        headers['X-Project-ID'] = this.projectId;
+      }
+      
+      // Add instance/service CRN when available
+      if (this.instanceId) {
+        headers['Service-CRN'] = this.instanceId;
+      }
       console.log(`🌐 Making request to: ${url}`);
       const response = await axios({
         method,
@@ -138,11 +164,11 @@ class IBMQuantumService {
     try {
       console.log(`📊 Fetching ${limit} jobs from IBM Quantum...`);
 
-      // Updated endpoints for 2025 IBM Quantum API
+      // Updated endpoints for 2025 Qiskit Runtime API
       const endpoints = [
-        `${this.baseUrl}/jobs?limit=${limit}`, // Primary 2025 endpoint
-        `${this.baseUrl}/jobs`, // Fallback without parameters
-        `https://us-east.quantum-computing.cloud.ibm.com/api/v1/jobs?limit=${limit}` // Legacy fallback
+        `${this.baseUrl}/projects/${this.projectId}/jobs?limit=${limit}`, // Primary project-scoped endpoint
+        `${this.baseUrl}/projects/${this.projectId}/jobs`, // Fallback without parameters
+        `${this.baseUrl}/jobs?limit=${limit}` // Global jobs endpoint (if project-scoped fails)
       ];
 
       let data: any = null;
@@ -216,9 +242,9 @@ class IBMQuantumService {
       console.log('🖥️  Fetching backends from IBM Quantum...');
 
       const endpoints = [
-        `${this.baseUrl}/backends`, // Primary 2025 endpoint
-        `https://us-east.quantum-computing.cloud.ibm.com/api/v1/backends`, // Legacy fallback
-        `https://cloud.ibm.com/apidocs/quantum-computing/backends` // Alternative endpoint
+        `${this.baseUrl}/backends`, // Primary Qiskit Runtime endpoint
+        `https://${this.region}.quantum-computing.cloud.ibm.com/runtime/backends`, // Explicit region endpoint
+        `https://quantum-computing.ibm.com/api/backends` // Public backends endpoint
       ];
 
       let data: any = null;
@@ -370,11 +396,37 @@ class IBMQuantumService {
   }
 
   isConfigured(): boolean {
-    return !!this.apiKey;
+    return !!(this.apiKey && this.projectId && this.instanceId);
   }
 
   getApiStatus(): string {
-    return this.apiKey ? '✅ Configured' : '❌ Not Configured';
+    const parts = [];
+    if (!this.apiKey) parts.push('API Token missing');
+    if (!this.projectId) parts.push('Project ID missing');
+    if (!this.instanceId) parts.push('Instance ID missing');
+    
+    return parts.length === 0 ? '✅ Fully Configured' : `❌ Missing: ${parts.join(', ')}`;
+  }
+  
+  getConfigurationHelp(): string {
+    return `
+🔧 IBM Quantum Configuration Required:
+
+Environment Variables needed in your .env file:
+• IBM_QUANTUM_API_TOKEN=your_api_token_here
+• IBM_QUANTUM_PROJECT_ID=your_project_id_here  
+• IBM_QUANTUM_INSTANCE_ID=your_instance_id_here
+• IBM_QUANTUM_REGION=us-east (optional, defaults to us-east)
+
+📍 How to find these values:
+1. Go to https://quantum.ibm.com/
+2. Create an account and access IBM Quantum Experience
+3. API Token: Account Settings → API Token
+4. Project ID: Your workspace/project ID from the dashboard
+5. Instance ID: Your Quantum service instance ID from IBM Cloud
+
+Current Status: ${this.getApiStatus()}
+`;
   }
 }
 
