@@ -587,6 +587,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Quantum Quest job submission endpoint
+  app.post("/api/quantum/submit-job", async (req, res) => {
+    try {
+      const { levelId, circuitCode, backend, shots, metadata } = req.body;
+      
+      // Create a quantum job entry
+      const quantumJob = {
+        id: `quest_${levelId}_${Date.now()}`,
+        name: `Quantum Quest: ${levelId}`,
+        status: "queued" as const,
+        backend: backend || "ibm_qasm_simulator",
+        qubits: 2,
+        shots: shots || 1024,
+        submissionTime: new Date(),
+        metadata: {
+          ...metadata,
+          source: "quantum-quest",
+          circuitCode
+        }
+      };
+
+      // Add to job storage
+      const job = await storage.createJob(quantumJob);
+
+      res.json({ success: true, jobId: job.id, status: job.status });
+    } catch (error) {
+      console.error("Failed to submit quantum quest job:", error);
+      res.status(500).json({ error: "Failed to submit quantum job" });
+    }
+  });
+
   // ==================== AI ASSISTANT API ROUTES ====================
   
   // Generate job suggestions
