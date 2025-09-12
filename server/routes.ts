@@ -587,24 +587,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Quantum Quest job submission schema
+  const quantumJobSubmissionSchema = z.object({
+    levelId: z.string().min(1, "Level ID is required"),
+    circuitCode: z.string().min(1, "Circuit code is required"),
+    backend: z.string().default("ibm_qasm_simulator"),
+    shots: z.number().int().min(1).max(100000).default(1024),
+    metadata: z.object({
+      challengeType: z.string(),
+      expectedResult: z.string(),
+      learningObjective: z.string()
+    }).optional()
+  });
+
   // Quantum Quest job submission endpoint
   app.post("/api/quantum/submit-job", async (req, res) => {
     try {
-      const { levelId, circuitCode, backend, shots, metadata } = req.body;
+      const validatedData = quantumJobSubmissionSchema.parse(req.body);
       
       // Create a quantum job entry
       const quantumJob = {
-        id: `quest_${levelId}_${Date.now()}`,
-        name: `Quantum Quest: ${levelId}`,
+        id: `quest_${validatedData.levelId}_${Date.now()}`,
+        name: `Quantum Quest: ${validatedData.levelId}`,
         status: "queued" as const,
-        backend: backend || "ibm_qasm_simulator",
+        backend: validatedData.backend,
         qubits: 2,
-        shots: shots || 1024,
-        submissionTime: new Date(),
-        metadata: {
-          ...metadata,
-          source: "quantum-quest",
-          circuitCode
+        shots: validatedData.shots,
+        program: validatedData.circuitCode,
+        tags: ["quantum-quest", validatedData.levelId],
+        results: {
+          metadata: {
+            ...validatedData.metadata,
+            source: "quantum-quest",
+            circuitCode: validatedData.circuitCode
+          }
         }
       };
 
@@ -613,8 +629,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ success: true, jobId: job.id, status: job.status });
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
       console.error("Failed to submit quantum quest job:", error);
       res.status(500).json({ error: "Failed to submit quantum job" });
+    }
+  });
+
+  // Get quantum quest job status
+  app.get("/api/quantum/jobs/:jobId", async (req, res) => {
+    try {
+      const job = await storage.getJobById(req.params.jobId);
+      if (!job) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+      res.json(job);
+    } catch (error) {
+      console.error(`Error fetching quantum job ${req.params.jobId}:`, error);
+      res.status(500).json({ error: "Failed to fetch job status" });
     }
   });
 

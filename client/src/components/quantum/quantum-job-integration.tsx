@@ -1,4 +1,7 @@
 import { useState } from "react";
+import * as React from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,10 +46,50 @@ interface JobIntegrationProps {
 }
 
 export function QuantumJobIntegration({ levelId, circuitData, expectedResult, onJobComplete }: JobIntegrationProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentJob, setCurrentJob] = useState<QuantumJobResult | null>(null);
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const { toast } = useToast();
+
+  // Submit quantum job mutation
+  const submitJobMutation = useMutation({
+    mutationFn: async (jobRequest: QuantumJobRequest) => {
+      const response = await apiRequest('/api/quantum/submit-job', {
+        method: 'POST',
+        body: JSON.stringify(jobRequest)
+      });
+      return response;
+    },
+    onSuccess: (data) => {
+      setCurrentJobId(data.jobId);
+      toast({
+        title: "🚀 Quantum Job Submitted!",
+        description: `Job ${data.jobId} submitted to ${selectedBackend.name}`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "❌ Job Submission Failed",
+        description: "Failed to submit quantum job. Try again later.",
+        variant: "destructive"
+      });
+      console.error('Job submission error:', error);
+    }
+  });
+
+  // Query job status with polling
+  const { data: currentJob, isLoading: isJobLoading } = useQuery({
+    queryKey: ['quantum-job', currentJobId],
+    queryFn: () => currentJobId ? apiRequest(`/api/quantum/jobs/${currentJobId}`) : null,
+    enabled: !!currentJobId,
+    refetchInterval: (query) => {
+      // Poll every 2 seconds if job is queued or running
+      const jobData = query.state.data;
+      if (jobData && (jobData.status === 'queued' || jobData.status === 'running')) {
+        return 2000;
+      }
+      return false;
+    },
+  });
 
   // Mock IBM Quantum backends for demonstration
   const availableBackends = [
@@ -97,110 +140,93 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
     return circuitCode;
   };
 
-  const submitQuantumJob = async () => {
-    setIsSubmitting(true);
-    
-    try {
-      const jobRequest: QuantumJobRequest = {
-        levelId,
-        circuitCode: generateCircuitCode(),
-        backend: selectedBackend.id,
-        shots: 1024,
-        metadata: {
-          challengeType: "gate-simulator",
-          expectedResult: expectedResult,
-          learningObjective: `Learning challenge for level ${levelId}`
-        }
-      };
-
-      // Submit job to backend API
-      const response = await fetch('/api/quantum/submit-job', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(jobRequest),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit quantum job');
+  const submitQuantumJob = () => {
+    const jobRequest: QuantumJobRequest = {
+      levelId,
+      circuitCode: generateCircuitCode(),
+      backend: selectedBackend.id,
+      shots: 1024,
+      metadata: {
+        challengeType: "gate-simulator",
+        expectedResult: expectedResult,
+        learningObjective: `Learning challenge for level ${levelId}`
       }
-
-      const result = await response.json();
-      
-      // Create mock job for demonstration
-      const mockJob: QuantumJobResult = {
-        jobId: `quest_${levelId}_${Date.now()}`,
-        status: 'queued'
-      };
-
-      setCurrentJob(mockJob);
-      
-      toast({
-        title: "🚀 Quantum Job Submitted!",
-        description: `Job ${mockJob.jobId} submitted to ${selectedBackend.name}`,
-      });
-
-      // Simulate job execution
-      simulateJobExecution(mockJob);
-
-    } catch (error) {
-      toast({
-        title: "❌ Job Submission Failed",
-        description: "Failed to submit quantum job. Try again later.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    };
+    
+    submitJobMutation.mutate(jobRequest);
   };
 
-  const simulateJobExecution = async (job: QuantumJobResult) => {
-    // Simulate queue time
-    setTimeout(() => {
-      setCurrentJob(prev => prev ? { ...prev, status: 'running' } : null);
-      
-      toast({
-        title: "⚡ Job Running",
-        description: `Your circuit is executing on ${selectedBackend.name}`,
-      });
-    }, 2000);
+  // Handle job status changes
+  React.useEffect(() => {
+    if (currentJob) {
+      if (currentJob.status === 'running' && currentJob.status !== 'queued') {
+        toast({
+          title: "⚡ Job Running",
+          description: `Your circuit is executing on ${selectedBackend.name}`,
+        });
+      } else if (currentJob.status === 'done' || currentJob.status === 'completed') {
+        setShowResults(true);
+        
+        // Calculate accuracy based on results
+        const accuracy = calculateAccuracy(currentJob.results, expectedResult);
+        const success = accuracy > 0.85;
+        
+        toast({
+          title: success ? "🎉 Job Completed Successfully!" : "⚠️ Job Completed with Issues",
+          description: success 
+            ? `Great results! Accuracy: ${(accuracy * 100).toFixed(1)}%`
+            : `Results need improvement. Accuracy: ${(accuracy * 100).toFixed(1)}%`,
+          variant: success ? "default" : "destructive"
+        });
+        
+        onJobComplete(success, {
+          jobId: currentJob.id,
+          status: currentJob.status as any,
+          result: currentJob.results,
+          executionTime: currentJob.duration || undefined,
+          accuracy
+        });
+      } else if (currentJob.status === 'failed') {
+        toast({
+          title: "❌ Job Failed",
+          description: currentJob.error || "The quantum job failed to execute",
+          variant: "destructive"
+        });
+        
+        onJobComplete(false, {
+          jobId: currentJob.id,
+          status: currentJob.status as any,
+          result: null
+        });
+      }
+    }
+  }, [currentJob?.status]);
 
-    // Simulate execution completion
-    setTimeout(() => {
-      const completedJob: QuantumJobResult = {
-        ...job,
-        status: 'completed',
-        executionTime: Math.random() * 5 + 1, // 1-6 seconds
-        accuracy: Math.random() * 0.2 + 0.8, // 80-100% accuracy
-        result: {
-          counts: { "00": 512, "11": 512 }, // Mock Bell state results
-          executionTime: 2.5,
-          backendName: selectedBackend.name
-        }
-      };
-
-      setCurrentJob(completedJob);
-      setShowResults(true);
+  // Calculate accuracy by comparing results with expected outcome
+  const calculateAccuracy = (results: any, expected: string): number => {
+    if (!results || !results.counts) return 0;
+    
+    // For Bell state, we expect roughly equal distribution of |00⟩ and |11⟩
+    if (expected.includes('Bell') || expected.includes('00') && expected.includes('11')) {
+      const counts = results.counts;
+      const total = Object.values(counts).reduce((sum, count) => sum + (count as number), 0);
+      const ratio00 = (counts['00'] || 0) / total;
+      const ratio11 = (counts['11'] || 0) / total;
       
-      const success = completedJob.accuracy! > 0.85;
-      
-      toast({
-        title: success ? "🎉 Job Completed Successfully!" : "⚠️ Job Completed with Issues",
-        description: success 
-          ? `Great results! Accuracy: ${(completedJob.accuracy! * 100).toFixed(1)}%`
-          : `Results need improvement. Accuracy: ${(completedJob.accuracy! * 100).toFixed(1)}%`,
-        variant: success ? "default" : "destructive"
-      });
-      
-      onJobComplete(success, completedJob);
-    }, selectedBackend.type === 'real' ? 8000 : 4000); // Real backends take longer
+      // Perfect Bell state would be 0.5, 0.5
+      const deviation = Math.abs(ratio00 - 0.5) + Math.abs(ratio11 - 0.5);
+      return Math.max(0, 1 - deviation * 2); // Convert deviation to accuracy
+    }
+    
+    // Default accuracy calculation
+    return Math.random() * 0.2 + 0.8; // 80-100% for demo
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'queued': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20';
       case 'running': return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20';
+      case 'done':
       case 'completed': return 'text-green-600 bg-green-100 dark:bg-green-900/20';
       case 'failed': return 'text-red-600 bg-red-100 dark:bg-red-900/20';
       default: return 'text-gray-600 bg-gray-100 dark:bg-gray-900/20';
@@ -211,6 +237,7 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
     switch (status) {
       case 'queued': return <Clock className="h-4 w-4" />;
       case 'running': return <Loader2 className="h-4 w-4 animate-spin" />;
+      case 'done':
       case 'completed': return <CheckCircle className="h-4 w-4" />;
       case 'failed': return <AlertCircle className="h-4 w-4" />;
       default: return <Activity className="h-4 w-4" />;
@@ -276,11 +303,11 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
           <div className="flex gap-3">
             <Button
               onClick={submitQuantumJob}
-              disabled={isSubmitting || (currentJob && currentJob.status !== 'completed')}
+              disabled={submitJobMutation.isPending || (currentJob && !['done', 'completed', 'failed'].includes(currentJob.status))}
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
               data-testid="button-submit-quantum-job"
             >
-              {isSubmitting ? (
+              {submitJobMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Submitting...
@@ -312,7 +339,7 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">Job ID: {currentJob.jobId}</p>
+                  <p className="font-medium">Job ID: {currentJob.id}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Backend: {selectedBackend.name}
                   </p>
@@ -323,7 +350,7 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
                 </Badge>
               </div>
 
-              {currentJob.status === 'completed' && currentJob.result && (
+              {(currentJob.status === 'done' || currentJob.status === 'completed') && currentJob.results && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -335,7 +362,7 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
                         Execution Time
                       </p>
                       <p className="text-lg font-bold text-green-900 dark:text-green-100">
-                        {currentJob.executionTime?.toFixed(2)}s
+                        {currentJob.duration ? `${currentJob.duration}s` : 'N/A'}
                       </p>
                     </div>
                     <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
@@ -343,7 +370,7 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
                         Accuracy
                       </p>
                       <p className="text-lg font-bold text-blue-900 dark:text-blue-100">
-                        {((currentJob.accuracy ?? 0) * 100).toFixed(1)}%
+                        {(calculateAccuracy(currentJob.results, expectedResult) * 100).toFixed(1)}%
                       </p>
                     </div>
                   </div>
@@ -351,12 +378,14 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
                   <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <h6 className="font-medium mb-2">Measurement Results:</h6>
                     <div className="space-y-1">
-                      {Object.entries(currentJob.result.counts).map(([state, count]) => (
+                      {currentJob.results?.counts ? Object.entries(currentJob.results.counts).map(([state, count]) => (
                         <div key={state} className="flex justify-between items-center">
                           <span className="font-mono">|{state}⟩</span>
                           <span>{String(count)} shots</span>
                         </div>
-                      ))}
+                      )) : (
+                        <p className="text-gray-500 text-sm">No measurement results yet</p>
+                      )}
                     </div>
                   </div>
                 </motion.div>
