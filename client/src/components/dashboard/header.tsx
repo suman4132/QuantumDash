@@ -8,6 +8,7 @@ import {
   CloudDownload,
   X,
   Users,
+  Play,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -434,8 +435,35 @@ export function Header({
               </Button>
             </Link>
 
+            {/* Play and Learn Button */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button
+                variant="default"
+                size="sm"
+                className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
+                data-testid="button-play-learn"
+                onClick={() => {
+                  toast({
+                    title: "Play and Learn",
+                    description: "Interactive quantum computing tutorials coming soon!",
+                  });
+                }}
+              >
+                <motion.div
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                >
+                  <Play className="h-4 w-4" fill="currentColor" />
+                </motion.div>
+                Play and Learn
+              </Button>
+            </motion.div>
+
             {/* Notification Bell */}
-            <div className="relative">
+            <div className="relative ml-2">
               <Button
                 variant="ghost"
                 size="icon"
