@@ -384,9 +384,10 @@ export function Header({
               )}
             </div>
 
+            {/* Center controls group */}
             <div className="flex items-center gap-4">
               {/* Connection Status Indicator */}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="hidden lg:flex items-center gap-2 text-sm text-muted-foreground">
                 <div
                   className={cn("h-2 w-2 rounded-full", {
                     "bg-green-500 animate-pulse":
@@ -408,6 +409,7 @@ export function Header({
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2"
+                data-testid="button-sync"
               >
                 <RefreshCw
                   className={cn(
@@ -415,116 +417,131 @@ export function Header({
                     syncStatus === "syncing" && "animate-spin",
                   )}
                 />
-                {syncStatus === "syncing" && "Syncing..."}
-                {syncStatus === "success" && "Synced!"}
-                {syncStatus === "error" && "Error"}
-                {syncStatus === "idle" && "Sync IBM"}
+                <span className="hidden sm:inline">
+                  {syncStatus === "syncing" && "Syncing..."}
+                  {syncStatus === "success" && "Synced!"}
+                  {syncStatus === "error" && "Error"}
+                  {syncStatus === "idle" && "Sync IBM"}
+                </span>
               </Button>
             </div>
 
-            {/* Teamwork Button */}
-            <Link to="/teamwork">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/20"
-                data-testid="button-teamwork"
-              >
-                <Users className="h-4 w-4" />
-                Teamwork
-              </Button>
-            </Link>
-
-            {/* Play and Learn Button */}
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Button
-                variant="default"
-                size="sm"
-                className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
-                data-testid="button-play-learn"
-                onClick={() => {
-                  toast({
-                    title: "Play and Learn",
-                    description: "Interactive quantum computing tutorials coming soon!",
-                  });
-                }}
-              >
-                <motion.div
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            {/* Action buttons group */}
+            <div className="flex items-center gap-2">
+              {/* Teamwork Button */}
+              <Link to="/teamwork">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden md:flex items-center gap-2 text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/20"
+                  data-testid="button-teamwork"
                 >
-                  <Play className="h-4 w-4" fill="currentColor" />
-                </motion.div>
-                Play and Learn
-              </Button>
-            </motion.div>
+                  <Users className="h-4 w-4" />
+                  <span className="hidden lg:inline">Teamwork</span>
+                </Button>
+              </Link>
 
-            {/* Notification Bell */}
-            <div className="relative ml-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onNotificationToggle}
-                className="relative"
+              {/* Play and Learn Button */}
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <Bell className="w-5 h-5" />
-                <Badge
-                  variant="destructive"
-                  className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center text-xs"
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
+                  data-testid="button-play-learn"
+                  onClick={() => {
+                    toast({
+                      title: "Play and Learn",
+                      description: "Interactive quantum computing tutorials coming soon!",
+                    });
+                  }}
                 >
-                  3
-                </Badge>
-              </Button>
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Play className="h-4 w-4" fill="currentColor" />
+                  </motion.div>
+                  <span className="hidden sm:inline">Play and Learn</span>
+                </Button>
+              </motion.div>
+            </div>
+
+            {/* Right side controls */}
+            <div className="flex items-center gap-3">
+              {/* Notification Bell */}
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onNotificationToggle}
+                  className="relative"
+                  data-testid="button-notifications"
+                >
+                  <Bell className="w-5 h-5" />
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center text-xs"
+                  >
+                    3
+                  </Badge>
+                </Button>
+              </div>
 
               {/* User Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <User className="w-5 h-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-2 py-2">
-                    <p className="text-sm font-medium">
-                      {user?.name || "User"}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {user?.email || "user@example.com"}
-                    </p>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() =>
-                      setTheme(theme === "dark" ? "light" : "dark")
-                    }
-                  >
-                    {theme === "dark" ? (
-                      <Sun className="w-4 h-4 mr-2" />
-                    ) : (
-                      <Moon className="w-4 h-4 mr-2" />
-                    )}
-                    {theme === "dark" ? "Light Mode" : "Dark Mode"}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => {
-                      logout();
-                      window.location.href = "/";
-                    }}
-                    className="text-red-600 dark:text-red-400"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="relative">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      data-testid="button-user-menu"
+                    >
+                      <User className="w-5 h-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="px-2 py-2">
+                      <p className="text-sm font-medium">
+                        {user?.name || "User"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {user?.email || "user@example.com"}
+                      </p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() =>
+                        setTheme(theme === "dark" ? "light" : "dark")
+                      }
+                    >
+                      {theme === "dark" ? (
+                        <Sun className="w-4 h-4 mr-2" />
+                      ) : (
+                        <Moon className="w-4 h-4 mr-2" />
+                      )}
+                      {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Settings className="w-4 h-4 mr-2" />
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        logout();
+                        window.location.href = "/";
+                      }}
+                      className="text-red-600 dark:text-red-400"
+                    >
+                      <LogOut className="w-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </motion.div>
         </div>
