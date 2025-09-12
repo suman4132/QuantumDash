@@ -70,7 +70,7 @@ class IBMQuantumService {
       this.tokenExpiry = Date.now() + (50 * 60 * 1000);
       
       console.log('✅ Successfully generated Bearer token');
-      return this.bearerToken;
+      return this.bearerToken!
     } catch (error: any) {
       console.error('❌ Failed to generate Bearer token:', error.response?.data || error.message);
       throw new Error('Failed to authenticate with IBM Cloud');
@@ -311,7 +311,7 @@ class IBMQuantumService {
   }
 
   async getJobById(jobId: string): Promise<IBMQuantumJob | null> {
-    if (!this.apiToken) {
+    if (!this.apiKey) {
       console.warn('API token not available. Cannot fetch job by ID.');
       return null;
     }
@@ -370,11 +370,11 @@ class IBMQuantumService {
   }
 
   isConfigured(): boolean {
-    return !!this.apiToken;
+    return !!this.apiKey;
   }
 
   getApiStatus(): string {
-    return this.apiToken ? '✅ Configured' : '❌ Not Configured';
+    return this.apiKey ? '✅ Configured' : '❌ Not Configured';
   }
 }
 
