@@ -30,6 +30,17 @@ interface QuantumJobRequest {
   };
 }
 
+interface QuantumJobResponse {
+  jobId: string;
+  status: 'queued' | 'running' | 'completed' | 'failed' | 'done';
+  id: string;
+  results?: {
+    counts: Record<string, number>;
+  };
+  duration?: number;
+  error?: string;
+}
+
 interface QuantumJobResult {
   jobId: string;
   status: 'queued' | 'running' | 'completed' | 'failed';
@@ -38,9 +49,21 @@ interface QuantumJobResult {
   accuracy?: number;
 }
 
+interface CircuitGate {
+  type: string;
+  qubit: number;
+  control?: number;
+  target?: number;
+}
+
+interface CircuitData {
+  gates: CircuitGate[];
+  qubits: number;
+}
+
 interface JobIntegrationProps {
   levelId: string;
-  circuitData: any;
+  circuitData?: CircuitData;
   expectedResult: string;
   onJobComplete: (success: boolean, jobResult: QuantumJobResult) => void;
 }
@@ -52,12 +75,30 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
 
   // Submit quantum job mutation
   const submitJobMutation = useMutation({
-    mutationFn: async (jobRequest: QuantumJobRequest) => {
-      const response = await apiRequest('/api/quantum/submit-job', {
-        method: 'POST',
-        body: JSON.stringify(jobRequest)
-      });
-      return response;
+    mutationFn: async (jobRequest: QuantumJobRequest): Promise<QuantumJobResponse> => {
+      try {
+        const response = await fetch('/api/jobs', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...jobRequest,
+            backend: jobRequest.backend,
+            priority: 'normal'
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data as QuantumJobResponse;
+      } catch (error) {
+        console.error('Job submission error:', error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
       setCurrentJobId(data.jobId);
@@ -79,11 +120,24 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
   // Query job status with polling
   const { data: currentJob, isLoading: isJobLoading } = useQuery({
     queryKey: ['quantum-job', currentJobId],
-    queryFn: () => currentJobId ? apiRequest(`/api/quantum/jobs/${currentJobId}`) : null,
+    queryFn: async (): Promise<QuantumJobResponse | null> => {
+      if (!currentJobId) return null;
+      try {
+        const response = await fetch(`/api/jobs/${currentJobId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data as QuantumJobResponse;
+      } catch (error) {
+        console.error('Job fetch error:', error);
+        return null;
+      }
+    },
     enabled: !!currentJobId,
     refetchInterval: (query) => {
       // Poll every 2 seconds if job is queued or running
-      const jobData = query.state.data;
+      const jobData = query.state.data as QuantumJobResponse | null;
       if (jobData && (jobData.status === 'queued' || jobData.status === 'running')) {
         return 2000;
       }
@@ -159,7 +213,7 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
   // Handle job status changes
   React.useEffect(() => {
     if (currentJob) {
-      if (currentJob.status === 'running' && currentJob.status !== 'queued') {
+      if (currentJob.status === 'running') {
         toast({
           title: "⚡ Job Running",
           description: `Your circuit is executing on ${selectedBackend.name}`,
@@ -181,7 +235,7 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
         
         onJobComplete(success, {
           jobId: currentJob.id,
-          status: currentJob.status as any,
+          status: currentJob.status === 'done' ? 'completed' : currentJob.status,
           result: currentJob.results,
           executionTime: currentJob.duration || undefined,
           accuracy
@@ -195,7 +249,7 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
         
         onJobComplete(false, {
           jobId: currentJob.id,
-          status: currentJob.status as any,
+          status: currentJob.status,
           result: null
         });
       }
@@ -207,9 +261,9 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
     if (!results || !results.counts) return 0;
     
     // For Bell state, we expect roughly equal distribution of |00⟩ and |11⟩
-    if (expected.includes('Bell') || expected.includes('00') && expected.includes('11')) {
+    if (expected.includes('Bell') || (expected.includes('00') && expected.includes('11'))) {
       const counts = results.counts;
-      const total = Object.values(counts).reduce((sum, count) => sum + (count as number), 0);
+      const total = Object.values(counts).reduce((sum: number, count: unknown) => sum + (count as number), 0);
       const ratio00 = (counts['00'] || 0) / total;
       const ratio11 = (counts['11'] || 0) / total;
       
@@ -303,7 +357,7 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
           <div className="flex gap-3">
             <Button
               onClick={submitQuantumJob}
-              disabled={submitJobMutation.isPending || (currentJob && !['done', 'completed', 'failed'].includes(currentJob.status))}
+              disabled={submitJobMutation.isPending || Boolean(currentJob && !['done', 'completed', 'failed'].includes(currentJob.status))}
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
               data-testid="button-submit-quantum-job"
             >

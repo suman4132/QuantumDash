@@ -13,7 +13,7 @@ import {
   Target,
   Trophy
 } from "lucide-react";
-import { GateSimulator } from "./gate-simulator";
+import { EnhancedGateSimulator } from "./enhanced-gate-simulator";
 import { QuantumJobIntegration } from "./quantum-job-integration";
 import { useToast } from "@/hooks/use-toast";
 
@@ -462,7 +462,7 @@ export function LevelChallenge({ levelId, onComplete, onBack }: LevelChallengePr
           transition={{ delay: 0.4 }}
         >
           {challenge.challenge.type === 'gate-builder' && (
-            <GateSimulator
+            <EnhancedGateSimulator
               challenge={{
                 id: challenge.id,
                 title: challenge.title,
@@ -470,7 +470,8 @@ export function LevelChallenge({ levelId, onComplete, onBack }: LevelChallengePr
                 targetState: challenge.challenge.targetState || "|ψ⟩",
                 initialGates: challenge.challenge.initialGates,
                 solution: challenge.challenge.solution,
-                maxMoves: challenge.challenge.maxMoves
+                maxMoves: challenge.challenge.maxMoves,
+                educationalTips: challenge.learningObjectives
               }}
               onComplete={handleChallengeComplete}
             />
@@ -479,6 +480,14 @@ export function LevelChallenge({ levelId, onComplete, onBack }: LevelChallengePr
           {(challenge.challenge.type === 'research-project' || challenge.challenge.type === 'algorithm-implementation') && (
             <QuantumJobIntegration
               levelId={challenge.id}
+              circuitData={{
+                gates: challenge.challenge.solution.map(sol => ({
+                  type: sol.gateId,
+                  qubit: sol.qubit,
+                  position: sol.position
+                })),
+                qubits: 2
+              }}
               expectedResult={challenge.challenge.targetState || "Bell state"}
               onJobComplete={(success, result) => {
                 if (success) {
