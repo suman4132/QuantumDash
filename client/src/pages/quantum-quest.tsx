@@ -56,6 +56,7 @@ interface UserProgress {
 }
 
 // Mock data for the learning system
+// Enhanced quantum learning levels with progressive difficulty
 const mockLevels: Level[] = [
   {
     id: "qb-101",
@@ -126,9 +127,93 @@ const mockLevels: Level[] = [
     completed: false,
     locked: true,
     category: "Research Challenges"
+  },
+  // Advanced Quantum Algorithms
+  {
+    id: "qa-401",
+    title: "Grover's Search Algorithm",
+    description: "Implement quantum database search with quadratic speedup over classical algorithms",
+    difficulty: "advanced",
+    points: 600,
+    completed: false,
+    locked: true,
+    category: "Quantum Algorithms"
+  },
+  {
+    id: "qa-402", 
+    title: "Quantum Fourier Transform",
+    description: "Master the QFT - foundation of Shor's algorithm and quantum phase estimation",
+    difficulty: "advanced",
+    points: 700,
+    completed: false,
+    locked: true,
+    category: "Quantum Algorithms"
+  },
+  {
+    id: "qa-501",
+    title: "Shor's Factoring Algorithm",
+    description: "Break RSA encryption using quantum period finding",
+    difficulty: "research",
+    points: 1000,
+    completed: false,
+    locked: true,
+    category: "Cryptography"
+  },
+  {
+    id: "qa-502",
+    title: "Variational Quantum Eigensolver (VQE)",
+    description: "Find molecular ground states using hybrid quantum-classical optimization",
+    difficulty: "research",
+    points: 900,
+    completed: false,
+    locked: true,
+    category: "Quantum Chemistry"
+  },
+  // Interactive Circuit Building
+  {
+    id: "cb-301",
+    title: "Custom Circuit Challenge",
+    description: "Build any quantum circuit you want and test it on real hardware",
+    difficulty: "intermediate",
+    points: 300,
+    completed: false,
+    locked: false,
+    category: "Circuit Building"
+  },
+  {
+    id: "cb-401",
+    title: "Error Correction Codes",
+    description: "Implement quantum error correction to protect your qubits",
+    difficulty: "advanced",
+    points: 800,
+    completed: false,
+    locked: true,
+    category: "Error Correction"
+  },
+  // Quantum Machine Learning
+  {
+    id: "ml-501",
+    title: "Quantum Neural Networks",
+    description: "Train quantum neural networks for pattern recognition",
+    difficulty: "research",
+    points: 1200,
+    completed: false,
+    locked: true,
+    category: "Quantum ML"
+  },
+  {
+    id: "ml-502",
+    title: "Quantum Support Vector Machine",
+    description: "Use quantum kernels for advanced machine learning",
+    difficulty: "research",
+    points: 1100,
+    completed: false,
+    locked: true,
+    category: "Quantum ML"
   }
 ];
 
+// Expanded achievement system with more rewards
 const mockAchievements: Achievement[] = [
   {
     id: "first-steps",
@@ -161,6 +246,46 @@ const mockAchievements: Achievement[] = [
     icon: "🚀",
     unlocked: false,
     rarity: "legendary"
+  },
+  {
+    id: "algorithm-master",
+    title: "Algorithm Master",
+    description: "Successfully implement 5 quantum algorithms",
+    icon: "🧠",
+    unlocked: false,
+    rarity: "epic"
+  },
+  {
+    id: "hardware-hero",
+    title: "Hardware Hero",
+    description: "Run 50 jobs on real IBM Quantum hardware",
+    icon: "⚡",
+    unlocked: false,
+    rarity: "rare"
+  },
+  {
+    id: "speedrun-champion",
+    title: "Speedrun Champion",
+    description: "Complete 10 levels in under 30 minutes",
+    icon: "⚡",
+    unlocked: false,
+    rarity: "epic"
+  },
+  {
+    id: "perfectionist",
+    title: "Quantum Perfectionist",
+    description: "Achieve 100% accuracy on 20 quantum jobs",
+    icon: "💎",
+    unlocked: false,
+    rarity: "legendary"
+  },
+  {
+    id: "educator",
+    title: "Quantum Educator",
+    description: "Help 10 other students with quantum concepts",
+    icon: "📚",
+    unlocked: false,
+    rarity: "rare"
   }
 ];
 
@@ -170,15 +295,20 @@ const mockUserProgress: UserProgress = {
   streak: 5,
   completedLevels: 2,
   rank: 42,
-  achievements: mockAchievements
+  achievements: mockAchievements.filter(a => a.unlocked)
 };
 
+// Enhanced leaderboard with more diverse achievements
 const mockLeaderboard = [
   { rank: 1, name: "QuantumExplorer", points: 2450, avatar: "👑" },
   { rank: 2, name: "QubitMaster", points: 2340, avatar: "⚡" },
   { rank: 3, name: "EntanglePro", points: 2180, avatar: "🔬" },
   { rank: 42, name: "You", points: 250, avatar: "🎯" },
   { rank: 43, name: "CircuitBuilder", points: 240, avatar: "⚙️" },
+  { rank: 44, name: "AlgoMaster", points: 235, avatar: "🧠" },
+  { rank: 45, name: "QuantumNewbie", points: 220, avatar: "🌟" },
+  { rank: 46, name: "ErrorFixer", points: 210, avatar: "🔧" },
+  { rank: 47, name: "MLQuantum", points: 205, avatar: "🤖" }
 ];
 
 export default function QuantumQuest() {

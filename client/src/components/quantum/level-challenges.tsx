@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
 import { EnhancedGateSimulator } from "./enhanced-gate-simulator";
 import { QuantumJobIntegration } from "./quantum-job-integration";
 import { useToast } from "@/hooks/use-toast";
+import { QuantumTutorialSystem, QuantumHint } from "./quantum-tutorial-system";
 
 // Import enhanced quantum gates to ensure proper educational data
 const ENHANCED_QUANTUM_GATES = [
@@ -334,6 +335,9 @@ export function LevelChallenge({ levelId, onComplete, onBack }: LevelChallengePr
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [isStarted, setIsStarted] = useState(false);
   const [currentHintIndex, setCurrentHintIndex] = useState(-1);
+  const [showTutorial, setShowTutorial] = useState(true);
+  const [currentHint, setCurrentHint] = useState<string | null>(null);
+  const [challengePhase, setChallengePhase] = useState<'tutorial' | 'challenge' | 'completed'>('tutorial');
   const { toast } = useToast();
   
   const challenge = LEVEL_CHALLENGES[levelId];
@@ -354,13 +358,27 @@ export function LevelChallenge({ levelId, onComplete, onBack }: LevelChallengePr
     onComplete(levelId, success, timeElapsed);
   };
 
+  // Tutorial completion handler
+  const handleTutorialComplete = () => {
+    setShowTutorial(false);
+    setChallengePhase('challenge');
+    // Show helpful hint for first-time users
+    if (levelId === 'qb-101') {
+      setCurrentHint("🎯 Great! Now you're ready to explore your first quantum concepts. Let's start learning!");
+      setTimeout(() => setCurrentHint(null), 5000);
+    }
+  };
+
   const showNextHint = () => {
     if (challenge.challenge.hints && currentHintIndex < challenge.challenge.hints.length - 1) {
       setCurrentHintIndex(prev => prev + 1);
       toast({
-        title: "💡 Hint",
+        title: "💡 Quantum Hint",
         description: challenge.challenge.hints![currentHintIndex + 1],
       });
+      // Show educational hint overlay
+      setCurrentHint(challenge.challenge.hints![currentHintIndex + 1]);
+      setTimeout(() => setCurrentHint(null), 6000);
     }
   };
 

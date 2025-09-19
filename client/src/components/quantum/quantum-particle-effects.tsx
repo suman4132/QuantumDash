@@ -17,11 +17,12 @@ interface Particle {
 
 interface QuantumParticleEffectsProps {
   trigger?: string;
-  intensity?: 'low' | 'medium' | 'high';
-  effectType?: 'success' | 'error' | 'quantum' | 'entanglement';
+  intensity?: 'low' | 'medium' | 'high' | 'ultra';
+  effectType?: 'success' | 'error' | 'quantum' | 'entanglement' | 'superposition' | 'measurement' | 'algorithm' | 'celebration';
   width?: number;
   height?: number;
   className?: string;
+  algorithm?: string; // For algorithm-specific effects
 }
 
 export function QuantumParticleEffects({ 
@@ -30,19 +31,24 @@ export function QuantumParticleEffects({
   effectType = 'quantum',
   width = 400,
   height = 300,
-  className = ""
+  className = "",
+  algorithm
 }: QuantumParticleEffectsProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
   const [particles, setParticles] = useState<Particle[]>([]);
   const particlesRef = useRef<Particle[]>([]);
 
-  // Color schemes for different effects
+  // Enhanced color schemes for quantum concepts
   const colorSchemes = {
     success: ['#22c55e', '#10b981', '#059669', '#047857'],
     error: ['#ef4444', '#dc2626', '#b91c1c', '#991b1b'],
     quantum: ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe'],
-    entanglement: ['#ec4899', '#f472b6', '#f9a8d4', '#fbcfe8']
+    entanglement: ['#ec4899', '#f472b6', '#f9a8d4', '#fbcfe8'],
+    superposition: ['#06b6d4', '#0891b2', '#0e7490', '#155e75'],
+    measurement: ['#f59e0b', '#d97706', '#b45309', '#92400e'],
+    algorithm: ['#dc2626', '#b91c1c', '#991b1b', '#7f1d1d'],
+    celebration: ['#fbbf24', '#f59e0b', '#d97706', '#b45309']
   };
 
   const colors = colorSchemes[effectType];
@@ -73,14 +79,85 @@ export function QuantumParticleEffects({
     return newParticles;
   };
 
-  // Create quantum effect patterns
+  // Enhanced quantum effect patterns
   const createQuantumBurst = (centerX?: number, centerY?: number) => {
     const x = centerX || width / 2;
     const y = centerY || height / 2;
-    const intensityMap = { low: 15, medium: 30, high: 50 };
-    const count = intensityMap[intensity];
+    const intensityMap = { low: 15, medium: 30, high: 50, ultra: 80 };
+    const count = intensityMap[intensity] || 30;
     
     return createParticles(count, x, y, 'quantum');
+  };
+
+  const createAlgorithmEffect = () => {
+    const particles: Particle[] = [];
+    
+    if (algorithm === 'grovers') {
+      // Grover's algorithm: convergent search pattern
+      for (let i = 0; i < 20; i++) {
+        const angle = (Math.PI * 2 * i) / 20;
+        particles.push({
+          id: `grovers-${i}`,
+          x: width / 2 + Math.cos(angle) * 80,
+          y: height / 2 + Math.sin(angle) * 80,
+          vx: -Math.cos(angle) * 2,
+          vy: -Math.sin(angle) * 2,
+          life: 100,
+          maxLife: 100,
+          color: '#dc2626',
+          size: 4,
+          type: 'quantum'
+        });
+      }
+    } else if (algorithm === 'shors') {
+      // Shor's algorithm: factoring pattern
+      for (let i = 0; i < 30; i++) {
+        particles.push({
+          id: `shors-${i}`,
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 4,
+          vy: (Math.random() - 0.5) * 4,
+          life: 120,
+          maxLife: 120,
+          color: '#7c3aed',
+          size: Math.random() * 3 + 2,
+          type: 'quantum'
+        });
+      }
+    }
+    
+    return particles;
+  };
+
+  const createCelebrationFireworks = () => {
+    const fireworks: Particle[] = [];
+    const fireworkCount = intensity === 'ultra' ? 6 : 3;
+    
+    for (let f = 0; f < fireworkCount; f++) {
+      const centerX = Math.random() * width;
+      const centerY = Math.random() * height * 0.6;
+      
+      for (let i = 0; i < 15; i++) {
+        const angle = (Math.PI * 2 * i) / 15;
+        const speed = Math.random() * 6 + 3;
+        
+        fireworks.push({
+          id: `firework-${f}-${i}`,
+          x: centerX,
+          y: centerY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 2, // Add upward bias
+          life: 60 + Math.random() * 40,
+          maxLife: 100,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 5 + 3,
+          type: 'quantum'
+        });
+      }
+    }
+    
+    return fireworks;
   };
 
   const createEntanglementEffect = () => {

@@ -77,7 +77,7 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
   const submitJobMutation = useMutation({
     mutationFn: async (jobRequest: QuantumJobRequest): Promise<QuantumJobResponse> => {
       try {
-        const response = await fetch('/api/jobs', {
+        const response = await fetch('/api/quantum/submit-job', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -101,10 +101,11 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
       }
     },
     onSuccess: (data) => {
-      setCurrentJobId(data.jobId);
+      const jobId = data.jobId || data.id;
+      setCurrentJobId(jobId);
       toast({
         title: "🚀 Quantum Job Submitted!",
-        description: `Job ${data.jobId} submitted to ${selectedBackend.name}`,
+        description: `Job ${jobId} submitted successfully!`,
       });
     },
     onError: (error) => {
@@ -123,7 +124,7 @@ export function QuantumJobIntegration({ levelId, circuitData, expectedResult, on
     queryFn: async (): Promise<QuantumJobResponse | null> => {
       if (!currentJobId) return null;
       try {
-        const response = await fetch(`/api/jobs/${currentJobId}`);
+        const response = await fetch(`/api/quantum/jobs/${currentJobId}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
