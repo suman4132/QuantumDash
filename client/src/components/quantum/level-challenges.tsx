@@ -17,6 +17,57 @@ import { EnhancedGateSimulator } from "./enhanced-gate-simulator";
 import { QuantumJobIntegration } from "./quantum-job-integration";
 import { useToast } from "@/hooks/use-toast";
 
+// Import enhanced quantum gates to ensure proper educational data
+const ENHANCED_QUANTUM_GATES = [
+  {
+    id: "hadamard",
+    name: "Hadamard",
+    symbol: "H",
+    color: "bg-gradient-to-r from-blue-500 to-blue-600",
+    description: "Creates equal superposition - the foundation of quantum computing",
+    matrix: [
+      [{ real: 1/Math.sqrt(2), imaginary: 0 }, { real: 1/Math.sqrt(2), imaginary: 0 }],
+      [{ real: 1/Math.sqrt(2), imaginary: 0 }, { real: -1/Math.sqrt(2), imaginary: 0 }]
+    ],
+    educational: {
+      concept: "Superposition",
+      visualEffect: "Transforms |0⟩ → (|0⟩ + |1⟩)/√2 and |1⟩ → (|0⟩ - |1⟩)/√2",
+      realWorldUse: "Used in quantum algorithms like Grover's search and Shor's factoring"
+    }
+  },
+  {
+    id: "pauli-x",
+    name: "Pauli-X",
+    symbol: "X",
+    color: "bg-gradient-to-r from-red-500 to-red-600",
+    description: "Quantum NOT gate - flips qubit state",
+    matrix: [
+      [{ real: 0, imaginary: 0 }, { real: 1, imaginary: 0 }],
+      [{ real: 1, imaginary: 0 }, { real: 0, imaginary: 0 }]
+    ],
+    educational: {
+      concept: "Bit Flip",
+      visualEffect: "Flips |0⟩ → |1⟩ and |1⟩ → |0⟩",
+      realWorldUse: "Error correction, quantum state preparation"
+    }
+  },
+  {
+    id: "cnot",
+    name: "CNOT",
+    symbol: "CNOT",
+    color: "bg-gradient-to-r from-purple-500 to-purple-600",
+    description: "Controlled NOT - creates entanglement between qubits",
+    educational: {
+      concept: "Entanglement",
+      visualEffect: "Flips target if control is |1⟩",
+      realWorldUse: "Bell states, error correction, quantum teleportation"
+    }
+  }
+];
+
+// Helper function to get gate by ID
+const getGateById = (id: string) => ENHANCED_QUANTUM_GATES.find(gate => gate.id === id);
+
 // Enhanced challenge types
 interface LevelChallenge {
   id: string;
@@ -79,15 +130,7 @@ const LEVEL_CHALLENGES: Record<string, LevelChallenge> = {
       type: 'gate-builder',
       instructions: "Use a Hadamard gate to create superposition. Place it on the first qubit to create the |+⟩ state.",
       targetState: "|+⟩",
-      initialGates: [
-        {
-          id: "hadamard",
-          name: "Hadamard",
-          symbol: "H",
-          color: "bg-blue-500",
-          description: "Creates superposition - equal |0⟩ and |1⟩ probability"
-        }
-      ],
+      initialGates: [getGateById("hadamard")].filter(Boolean),
       solution: [{ qubit: 0, position: 0, gateId: "hadamard" }],
       maxMoves: 1,
       hints: [
